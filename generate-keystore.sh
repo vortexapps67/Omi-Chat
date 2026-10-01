@@ -7,10 +7,10 @@ set -e
 
 KEYSTORE_DIR="keystore"
 KEYSTORE_FILE="$KEYSTORE_DIR/release.keystore"
-KEY_ALIAS="popchat-release-key"
+KEY_ALIAS="omichat-release-key"
 VALIDITY_DAYS=10000  # ~27 years
 
-echo "🔐 Generating Release Keystore for Pop Chat"
+echo "🔐 Generating Release Keystore for Omi Chat"
 echo "============================================="
 echo ""
 

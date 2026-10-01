@@ -5,11 +5,11 @@
 
 param(
     [string]$KeystoreDir = "keystore",
-    [string]$KeyAlias = "popchat-release-key",
+    [string]$KeyAlias = "omichat-release-key",
     [int]$ValidityDays = 10000
 )
 
-Write-Host "🔐 Generating Release Keystore for Pop Chat" -ForegroundColor Green
+Write-Host "🔐 Generating Release Keystore for Omi Chat" -ForegroundColor Green
 Write-Host "=============================================" -ForegroundColor Green
 Write-Host ""
 
