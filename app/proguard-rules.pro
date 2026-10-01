@@ -9,50 +9,63 @@
 # serialization compiler plugin is applied, so R8 already knows how to keep
 # serializable classes.
 
-# --- Optional bindings that are legitimately absent -------------------------
-#
-# supabase-kt depends on slf4j-api, whose LoggerFactory looks up a backend
-# binding (org.slf4j.impl.StaticLoggerBinder) that Android apps never ship -
-# SLF4J falls back to a no-op logger there. R8 reports the unresolved lookup as
-# a missing class and fails the build; the classes genuinely are not needed.
+# --- Logging ---------------------------------------------------------------
 -dontwarn org.slf4j.impl.**
 -dontwarn org.slf4j.**
 
 # --- App code ---------------------------------------------------------------
-
-# Room entities and the @Serializable wire models travel between Room, the
-# Supabase client and the UI. Keeping this (small) package costs little and
-# avoids the class of failure where a field is renamed in release but not in
-# debug, because nothing in the debug build went through a serializer.
 -keep class com.popchat.data.model.** { *; }
 -keep class com.popchat.data.supabase.model.** { *; }
+-keep class com.popchat.data.db.** { *; }
+-keep class com.popchat.data.repository.** { *; }
+-keep class com.popchat.ui.** { *; }
+-keep class com.popchat.di.** { *; }
 
-# Room instantiates Migration and DatabaseCallback subclasses reflectively.
+# --- Dagger / Hilt & ViewModel ----------------------------------------------
+-keep class dagger.hilt.** { *; }
+-keep class * extends androidx.lifecycle.ViewModel { *; }
+-keep class * extends androidx.lifecycle.ViewModelProvider$Factory { *; }
+-keepclasseswithmembers class * {
+    @javax.inject.Inject <init>(...);
+}
+-keep class javax.inject.** { *; }
+-dontwarn dagger.hilt.**
+-dontwarn javax.inject.**
+
+# --- Supabase & Ktor & OkHttp ------------------------------------------------
+-keep class io.github.jan.supabase.** { *; }
+-keep class io.ktor.** { *; }
+-dontwarn io.github.jan.supabase.**
+-dontwarn io.ktor.**
+-dontwarn okhttp3.**
+
+# --- Room Database -----------------------------------------------------------
+-keep class * extends androidx.room.RoomDatabase { *; }
 -keep class * extends androidx.room.migration.Migration { *; }
--keep class * extends androidx.room.RoomDatabase.Callback { *; }
-
-# Enum values()/valueOf() are used by Room type converters and by anything that
-# round-trips an enum through a name string.
+-keep class * extends androidx.room.RoomDatabase$Callback { *; }
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
-# kotlinx.serialization resolves serializers through generated Companion
-# objects, and needs the annotation metadata and generic signatures intact.
+# --- Kotlinx Serialization --------------------------------------------------
 -keepattributes *Annotation*, InnerClasses, Signature, EnclosingMethod
--keepclassmembers class com.popchat.data.supabase.model.** {
+-keepclassmembers class * {
     *** Companion;
 }
--keepclasseswithmembers class com.popchat.data.supabase.model.** {
+-keepclasseswithmembers class * {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Line numbers and the source file name are kept so release stack traces from
-# Play Console and any crash reporter stay readable.
+# --- Compose & Coil ----------------------------------------------------------
+-keep class coil.** { *; }
+-dontwarn coil.**
+-keep class androidx.compose.** { *; }
+-dontwarn androidx.compose.**
+
+# --- Line Numbers & Source Files ---------------------------------------------
 -keepattributes SourceFile, LineNumberTable
 -renamesourcefileattribute SourceFile
 
-# --- Annotations that are only present for tooling --------------------------
 -dontwarn javax.annotation.**
 -dontwarn jakarta.annotation.**

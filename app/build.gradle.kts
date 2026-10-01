@@ -39,7 +39,7 @@ android {
         applicationId = "com.popchat"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
+        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -55,30 +55,16 @@ android {
     // Declared before buildTypes so the release build type can reference it.
     signingConfigs {
         create("release") {
-            // Resolved against the repository root, not this module's directory.
-            // CI writes the decoded keystore to <repo>/keystore/release.keystore
-            // and sets KEYSTORE_PATH=keystore/release.keystore, but a bare
-            // file() inside app/build.gradle.kts resolves relative to app/ and
-            // would look for app/keystore/release.keystore - which never exists.
-            // The path would then silently fall through to an unsigned APK, so
-            // the release would build but never be installable.
-            val storePath = System.getenv("KEYSTORE_PATH")
-            if (!storePath.isNullOrBlank()) {
-                val candidate = rootProject.file(storePath)
-                if (candidate.exists()) {
-                    storeFile = candidate
-                    storePassword = System.getenv("KEYSTORE_PASSWORD")
-                    keyAlias = System.getenv("KEY_ALIAS")
-                    keyPassword = System.getenv("KEY_PASSWORD")
-                } else {
-                    logger.lifecycle(
-                        "OmiChat: KEYSTORE_PATH points at ${candidate.absolutePath}, which does not exist. " +
-                            "Falling back to an unsigned release APK."
-                    )
-                }
+            val storePath = System.getenv("KEYSTORE_PATH") ?: "keystore/release.keystore"
+            val candidate = rootProject.file(storePath)
+            if (candidate.exists()) {
+                storeFile = candidate
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "PPY9J4FNnMFATV0gOjMqe8el"
+                keyAlias = System.getenv("KEY_ALIAS") ?: "omichat"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "PPY9J4FNnMFATV0gOjMqe8el"
             } else {
                 logger.lifecycle(
-                    "OmiChat: KEYSTORE_PATH is unset. Falling back to an unsigned release APK."
+                    "OmiChat: Keystore not found at ${candidate.absolutePath}. Falling back to unsigned."
                 )
             }
         }
@@ -92,9 +78,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Assigning a signing config with no storeFile throws at configuration
-            // time, which would break every build on a machine that has not been
-            // given release credentials. Unsigned output is the better default.
             if (signingConfigs.getByName("release").storeFile != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
