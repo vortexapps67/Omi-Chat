@@ -73,10 +73,10 @@ jobs:
           EOF
 
       # Optional: without a keystore the release APK is simply unsigned. The
-      # check lives in the shell rather than a step `if` because step conditions
-      # cannot reliably read the secrets context.
+      # decision is made in the shell rather than a step `if`, because step
+      # conditions cannot read the secrets context reliably - getting it wrong
+      # would silently skip signing instead of failing loudly.
       - name: Decode release keystore
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
@@ -86,7 +86,7 @@ jobs:
             echo "KEYSTORE_PATH=keystore/release.keystore" >> "$GITHUB_ENV"
             echo "Decoded release keystore"
           else
-            echo "No keystore supplied - release APK will be unsigned"
+            echo "::warning::No KEYSTORE_BASE64 secret - release APK will be unsigned"
           fi
 
       - name: Export signing credentials

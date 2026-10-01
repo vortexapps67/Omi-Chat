@@ -17,5 +17,5 @@ dependencyResolutionManagement {
         }
     }
 }
-rootProject.name = "PopChat"
+rootProject.name = "OmiChat"
 include(":app")
