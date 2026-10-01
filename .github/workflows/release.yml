@@ -58,7 +58,7 @@ jobs:
           SUPABASE_JWKS_URL=${{ secrets.SUPABASE_JWKS_URL }}
           EOF
 
-      - name: Setup Signing Keystore (With Fallback)
+      - name: Setup Signing Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -73,16 +73,12 @@ jobs:
             echo "KEY_ALIAS=${KEY_ALIAS}" >> "$GITHUB_ENV"
             echo "KEY_PASSWORD=${KEY_PASSWORD}" >> "$GITHUB_ENV"
             echo "✅ Loaded custom release keystore from secrets."
-          else
-            echo "ℹ️ Using project default persistent keystore for in-place update compatibility..."
-            cat << 'EOF' | base64 -d > keystore/release.keystore
-/u3+7QAAAAIAAAABAAAAAQAHb21pY2hhdAAAAaD3e95fAAAFADCCBPwwDgYKKwYBBAEqAhEBAQUABIIE6ALq+bd75UXEt/+bES3I8lOci5W2EybprWHK6mFHQRbTiyihPrnZb3PZZ6l4pgPgGwwd4eHCi7yNJ8tEPXbMtqQIJlj+WMFHIHpJeIPK08lWiDqV5+Yn89Qs7ge4Y9jjN76UyoXBavmIdnG+rgmRJhg5I/2UvqOK9RNpm4vos06k0PB0729a8GEub6SQo7pbn/acb54JfTSy5SD1a0r911FWK/pyFGhiRLSEvAfs0a/OYfd25pSIjS+RH/plAzUTIXvgQ2lZJOwBEgKKJvqPRQSYUWjSIx1pq6ZFX908o2YSzHJo3lQ+qJjMnh0AisPov6VxaoBdr8bcngovQrR6/lg6Zq8S6mn871p2NTPgj4tvIG/ALwSKKgXSUFWRM273eJRRg/6api5G0GO30cYtbHQRJge+dfFy66lCoAiAcQKy2CIZ6ktxuFS+cHE6Nd9wg1uCzGJvM2RuL/+7OLqMe8lzMTYM/FKBXBXVQsEnZes1GmfVs4fk4NL7Md/HKYjYf6pMUk7iwN7uwXTRxdbbk7wjMkJLDppH9DNZyCA4gQZg1OMMP/4ew7DtZId3G/CJNDR/03K26iTKXJC7Ato8Ueq2e99aWHWvpaFIlHg7b+mv63Vk/KrhpO4L8CYN9HtofM+6JvddMxpO4fAhGb8Dsuks/jxX9JxlmGmAzTs31JSriBB3tUs2Mp6A5gkyFillNzFWZg5bbXT02lEX0lkZD7VBdfKcln+4z8xy4rGtEqJrH2zlqn3vdwK46tQVr4QbIQb1KhuUCRyana+iq98c9Gg3wkk8H50kTnWNoD4uWyANT3nkr+9d30Bt8djDS4fPFSVAv+WV8qGfliVEjK4d6iJ5ZmZt0cEKTzpOs5VHHbVGij0opmKbuw+Zv8tE4lmlpkX+VvXHex7BIvb5cIOsvbuWOVmTjuiwELg7oMA/u0uQ+oJfmNgqzSeVRX1k9yA8rE/R/oBnzWjRPUzDgYX0ZV+4BX3rDimxh0o973fprcIQ5SiWTN571uprFTyrCKDRXvlOTCmGGTZ2zEcpIys5YrRbKOJIWIeMQbKWTM+ygmnBlonHf5tmwoopdu2tG8ArJLrCLGXVQgb2n8xxh7y7qo2PV4U0AI92Hfc4NlxTIwty4eb+qIca0EVEuvRRzRlaE9VxAqGml2J9LN7+rZbtTxZNb+m6DuouZvQOmKR1LQHdE2OAJAJ1zPa8FuGpo/ZuaivNGyQ5MgDTI7DXHcOQF54ey+vQPLybBSgsjc5c146KR/RSpm4wUUI7UfxQtksboNYE0I4QUK45OJpJ2IyZvmNmBd3f8yC40Q5AouJsH3cJ8Hnob+IUMYRiBZKNrT3Fo7wc6OD0wcIxlPIY6C1FsG0JHJuCa/jQHE3EDaUF0x8f18cnxOrkeOBZyv95XRIeWfYKtwdOgaLKPEtis+LMBmKuQirAPu98Rjsy0bJK4AcOCHL0dXpulBgkSISBHgd2oOdUoBUc0kSxlttA/Gu5zb6ifaIetf5lxqMLWSwMp20iINj/WWMxyfjVGdGEYZVtORs3vkEkoiQc7BtKaCGvqNVzpK8Vrnvpfiy2TlXwe0xQ7bhRTDlhWlJi2PnBOfbigNe5OC79SKaW166WGyO1a+rfTRSCq71XWdTW40yjkugvJio3gCpb02TsZAbLdER3YEgQ4brnDOFhAAAAAQAFWC41MDkAAAN6MIIDdjCCAl6gAwIBAgIJAI4hxonDw5W2MA0GCSqGSIb3DQEBCwUAMGgxCzAJBgNVBAYTAklOMRAwDgYDVQQIEwdVbmtub3duMRAwDgYDVQQHEwdVbmtub3duMREwDwYDVQQKEwhPbWkgQ2hhdDEPMA0GA1UECxMGTW9iaWxlMREwDwYDVQQDEwhPbWkgQ2hhdDAgFw0yNjEwMDExMjQxMjVaGA8yMDU0MDIxNjEyNDEyNVowaDELMAkGA1UEBhMCSU4xEDAOBgNVBAgTB1Vua25vd24xEDAOBgNVBAcTB1Vua25vd24xETAPBgNVBAoTCE9taSBDaGF0MQ8wDQYDVQQLEwZNb2JpbGUxETAPBgNVBAMTCE9taSBDaGF0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArGAIGDY4cpU6IdZ5XGKJDtwxE5AZjltsagqEfwThkdgzmtJLm9y1KW2f94lgZVsX3AMvnnAorj2up+TVJHJAUhofyUmUoAyeWuRDC7a5qC3eJY+aF7z1xlYx5LSnI5AdJvklqMrcGQlE6KCMedqHsaYN+MKzgRauLilGxibI1u1cRYlEsPCxb/MAsOzOHr4+gAmiyCB5KqUECm3k3o0a5Ns0bLYSAgSyRc0qCyBiWgGkvkghzsZFgQPSovKHHDqO+zYlc9kQcjkP+ROqRyeuTx0bqQUzq4HM6RraRHC24bB3z0kQtO/o0aM846gxvsvXMJhUJUl9Ppe0aqxBVUo8MwIDAQABoyEwHzAdBgNVHQ4EFgQUP3LfRLISyp+gIWQU9pYZ0ZjQWeUwDQYJKoZIhvcNAQELBQADggEBAJJtBrvevAMwufaqoFJ4OD3kWHTStifxKWpOo2L9c9sKmO14xJNfN3ZYTwYbglEucU9KKTpmm5sr21ndzi2VcVBj1Mowk0Pko3bVhPhe9OyK8Mwu1UpfqC+hBVqm48Aq2jaQh4K1sEawyLpFtT9WKNIn5IlpLMBN1e/PhB5F+UZLLixk/ZIPh0OaLP7LW1yzlvC6XEqJ+Qc+zkAEsEco/dkp/tVIIYEZMjfco07cs9qdXAAJtk6mUQ4fYSfjOLh64tQfw7rChOfESaID9MBmaHGvEeKbummehNsl3q6l8CWsNwIen6nmm9OoVqDgbCS5revpthWkJw8JZUMRTaOHblCD9vAifAEdJt6oAlOqt9YyQvBYYQ==
-EOF
+          elif [ -f "keystore/release.keystore" ]; then
             echo "KEYSTORE_PATH=keystore/release.keystore" >> "$GITHUB_ENV"
             echo "KEYSTORE_PASSWORD=PPY9J4FNnMFATV0gOjMqe8el" >> "$GITHUB_ENV"
             echo "KEY_ALIAS=omichat" >> "$GITHUB_ENV"
             echo "KEY_PASSWORD=PPY9J4FNnMFATV0gOjMqe8el" >> "$GITHUB_ENV"
-            echo "✅ Loaded persistent project signing keystore."
+            echo "✅ Loaded repository release keystore."
           fi
 
       - name: Build release APK
