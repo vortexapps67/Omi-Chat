@@ -72,8 +72,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -135,9 +135,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1,license.txt,NOTICE}"
         }
     }
-
-    // Feature flags for new Android Gradle Plugin features
-    experimentalProperties["android.experimental.r8.desugaring"] = "true"
 }
 
 dependencies {
