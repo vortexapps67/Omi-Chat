@@ -52,6 +52,31 @@ android {
         buildConfigField("String", "SUPABASE_JWKS_URL", "\"${getEnv("SUPABASE_JWKS_URL")}\"")
     }
 
+    // Declared before buildTypes so the release build type can reference it.
+    signingConfigs {
+        create("release") {
+            val storePath = System.getenv("KEYSTORE_PATH")
+            if (!storePath.isNullOrBlank()) {
+                val candidate = file(storePath)
+                if (candidate.exists()) {
+                    storeFile = candidate
+                    storePassword = System.getenv("KEYSTORE_PASSWORD")
+                    keyAlias = System.getenv("KEY_ALIAS")
+                    keyPassword = System.getenv("KEY_PASSWORD")
+                } else {
+                    logger.lifecycle(
+                        "OmiChat: KEYSTORE_PATH points at ${candidate.absolutePath}, which does not exist. " +
+                            "Falling back to an unsigned release APK."
+                    )
+                }
+            } else {
+                logger.lifecycle(
+                    "OmiChat: KEYSTORE_PATH is unset. Falling back to an unsigned release APK."
+                )
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -60,22 +85,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            // Assigning a signing config with no storeFile throws at configuration
+            // time, which would break every build on a machine that has not been
+            // given release credentials. Unsigned output is the better default.
+            if (signingConfigs.getByName("release").storeFile != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isMinifyEnabled = false
             isDebuggable = true
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
-        }
-    }
-
-    signingConfigs {
-        create("release") {
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
         }
     }
 

@@ -1,5 +1,11 @@
 package com.popchat.ui.calls
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,25 +15,31 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Painter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
+import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatBlue
 import com.popchat.ui.theme.OmiChatGreen
-import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.glassPanel
 
 @Composable
 fun VoiceCallScreen(
@@ -46,49 +58,45 @@ fun VoiceCallScreen(
 
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
-        // Gradient background
+        // Call surfaces are dark by design so the participant stays the focus;
+        // the gradient replaces the mesh backdrop here.
         Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            androidx.compose.foundation.background.Background(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF0D47A1), // Dark blue
-                        Color(0xFF1565C0),
-                        Color(0xFF1E88E5), // OmiChatBlue
-                        Color(0xFF006064)  // Teal
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF0D47A1), // Deep blue
+                            Color(0xFF1565C0),
+                            Color(0xFF1E88E5), // OmiChatBlue
+                            Color(0xFF006064), // Teal
+                        ),
                     ),
-                    center = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
-                    radius = 1.2f
-                )
-            )
-        }
-
-        // Glowing rings animation
-        val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "")
-        val pulseAlpha = infiniteTransition.animateFloat(
-            initialValue = 0.3f,
-            targetValue = 0.1f,
-            animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                animation = androidx.compose.animation.core.tween(
-                    durationMillis = 2000,
-                    easing = androidx.compose.animation.core.LinearEasing
                 ),
-                repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        )
+
+        // Pulsing halo behind the avatar, on a single shared frame clock.
+        val pulse = rememberInfiniteTransition(label = "callPulse").animateFloat(
+            initialValue = 0.94f,
+            targetValue = 1.12f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2000),
+                repeatMode = RepeatMode.Reverse,
             ),
-            label = "pulse"
+            label = "pulse",
         )
 
         Box(
             modifier = Modifier
-                .size(300.dp)
-                .background(Color.Transparent, CircleShape)
-                .graphicsLayer { alpha = pulseAlpha.value }
-        ) {
-            // Could add animated rings here
-        }
+                .size(280.dp)
+                .scale(pulse.value)
+                .graphicsLayer { alpha = 0.30f }
+                .background(
+                    color = Color.White.copy(alpha = 0.18f),
+                    shape = CircleShape,
+                ),
+        )
 
         Column(
             modifier = Modifier
@@ -105,7 +113,7 @@ fun VoiceCallScreen(
                             text = "Voice Call",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = androidx.compose.ui.graphics.Color.White
+                            color = Color.White
                         )
                     },
                     backgroundColor = OmiChatBlue.copy(alpha = 0.9f)
@@ -131,13 +139,13 @@ fun VoiceCallScreen(
                     text = contactName,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = androidx.compose.ui.graphics.Color.White
+                    color = Color.White
                 )
 
                 Text(
                     text = if (isIncoming) "Incoming..." else "Connecting...",
                     fontSize = 16.sp,
-                    color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f)
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
 
@@ -147,7 +155,7 @@ fun VoiceCallScreen(
                     text = "02:34",
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Medium,
-                    color = androidx.compose.ui.graphics.Color.White
+                    color = Color.White
                 )
             }
 
@@ -157,7 +165,7 @@ fun VoiceCallScreen(
             ) {
                 // Mute
                 CallControlButton(
-                    icon = if (isMuted) androidx.compose.material.icons.Icons.Default.MicOff else androidx.compose.material.icons.Icons.Default.Mic,
+                    icon = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic,
                     label = "Mute",
                     isActive = isMuted,
                     onClick = {
@@ -168,7 +176,7 @@ fun VoiceCallScreen(
 
                 // Speaker
                 CallControlButton(
-                    icon = if (isSpeakerOn) androidx.compose.material.icons.Icons.Default.VolumeUp else androidx.compose.material.icons.Icons.Default.VolumeOff,
+                    icon = if (isSpeakerOn) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
                     label = "Speaker",
                     isActive = isSpeakerOn,
                     onClick = {
@@ -179,7 +187,7 @@ fun VoiceCallScreen(
 
                 // Video
                 CallControlButton(
-                    icon = androidx.compose.material.icons.Icons.Default.Videocam,
+                    icon = Icons.Default.Videocam,
                     label = "Video",
                     onClick = onVideo
                 )
@@ -192,7 +200,7 @@ fun VoiceCallScreen(
                 ) {
                     // Decline
                     CallControlButton(
-                        icon = androidx.compose.material.icons.Icons.Default.CallEnd,
+                        icon = Icons.Default.CallEnd,
                         label = "Decline",
                         isDestructive = true,
                         size = 64,
@@ -201,7 +209,7 @@ fun VoiceCallScreen(
 
                     // Accept
                     CallControlButton(
-                        icon = androidx.compose.material.icons.Icons.Default.Call,
+                        icon = Icons.Default.Call,
                         label = "Accept",
                         isPrimary = true,
                         size = 64,
@@ -210,7 +218,7 @@ fun VoiceCallScreen(
                 }
             } else {
                 CallControlButton(
-                    icon = androidx.compose.material.icons.Icons.Default.CallEnd,
+                    icon = Icons.Default.CallEnd,
                     label = "End Call",
                     isDestructive = true,
                     size = 72,
@@ -248,8 +256,7 @@ fun VideoCallScreen(
                 contentAlignment = Alignment.Center
             ) {
                 // Gradient background as placeholder
-                androidx.compose.foundation.background.Background(
-                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                .background(androidx.compose.ui.graphics.Brush.verticalGradient(
                         colors = listOf(Color.Black, Color(0xFF1A1A2E), Color.Black)
                     )
                 )
@@ -263,12 +270,12 @@ fun VideoCallScreen(
                         text = contactName,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = androidx.compose.ui.graphics.Color.White
+                        color = Color.White
                     )
                     Text(
                         text = if (isIncoming) "Incoming Video Call..." else "Connecting...",
                         fontSize = 16.sp,
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -290,7 +297,7 @@ fun VideoCallScreen(
                     Text(
                         text = "You",
                         fontSize = 14.sp,
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.5f)
+                        color = Color.White.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -306,7 +313,7 @@ fun VideoCallScreen(
                         text = "02:34",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium,
-                        color = androidx.compose.ui.graphics.Color.White
+                        color = Color.White
                     )
                 }
             }
@@ -322,7 +329,7 @@ fun VideoCallScreen(
                 horizontalArrangement = Arrangement.spacedBy(40.dp)
             ) {
                 CallControlButton(
-                    icon = androidx.compose.material.icons.Icons.Default.CallEnd,
+                    icon = Icons.Default.CallEnd,
                     label = "Decline",
                     isDestructive = true,
                     size = 64,
@@ -330,7 +337,7 @@ fun VideoCallScreen(
                 )
 
                 CallControlButton(
-                    icon = androidx.compose.material.icons.Icons.Default.Videocam,
+                    icon = Icons.Default.Videocam,
                     label = "Accept",
                     isPrimary = true,
                     size = 64,
@@ -346,7 +353,7 @@ fun VideoCallScreen(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 CallControlButton(
-                    icon = if (isMuted) androidx.compose.material.icons.Icons.Default.MicOff else androidx.compose.material.icons.Icons.Default.Mic,
+                    icon = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic,
                     label = "Mute",
                     isActive = isMuted,
                     onClick = {
@@ -356,7 +363,7 @@ fun VideoCallScreen(
                 )
 
                 CallControlButton(
-                    icon = androidx.compose.material.icons.Icons.Default.SwitchCamera,
+                    icon = Icons.Default.SwitchCamera,
                     label = "Flip",
                     onClick = {
                         isFrontCamera = !isFrontCamera
@@ -365,7 +372,7 @@ fun VideoCallScreen(
                 )
 
                 CallControlButton(
-                    icon = androidx.compose.material.icons.Icons.Default.CallEnd,
+                    icon = Icons.Default.CallEnd,
                     label = "End",
                     isDestructive = true,
                     size = 64,
@@ -386,13 +393,13 @@ fun CallControlButton(
     size: Int = 56,
     onClick: () -> Unit
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
     
     val (backgroundColor, iconColor) = when {
-        isDestructive -> androidx.compose.ui.graphics.Color(0xFFEF4444) to androidx.compose.ui.graphics.Color.White
-        isPrimary -> OmiChatBlue to androidx.compose.ui.graphics.Color.White
+        isDestructive -> androidx.compose.ui.graphics.Color(0xFFEF4444) to Color.White
+        isPrimary -> OmiChatBlue to Color.White
         isActive -> OmiChatBlue.copy(alpha = 0.2f) to OmiChatBlue
-        else -> colors.surfaceContainerHighest.copy(alpha = 0.3f) to androidx.compose.ui.graphics.Color.White
+        else -> colors.surfaceContainerHighest.copy(alpha = 0.3f) to Color.White
     }
 
     Column(
@@ -419,7 +426,7 @@ fun CallControlButton(
             text = label,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            color = androidx.compose.ui.graphics.Color.White
+            color = Color.White
         )
     }
 }
@@ -455,13 +462,13 @@ fun CallHistoryScreen(
             navigationIcon = {
                 androidx.compose.material3.IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back"
                     )
                 }
             },
             colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             )
         )
 
@@ -494,7 +501,7 @@ fun CallHistoryScreen(
                 CallHistoryItem(call = call, onCallBack = onCallBack)
                 androidx.compose.material3.Divider(
                     modifier = Modifier.padding(start = 72.dp),
-                    color = OmiChatTheme.colorScheme.outlineVariant,
+                    color = MaterialTheme.colorScheme.outlineVariant,
                     thickness = 0.5.dp
                 )
             }
@@ -508,7 +515,7 @@ fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -524,7 +531,7 @@ fun FilterChip(
             text = text,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = if (isSelected) androidx.compose.ui.graphics.Color.White else colors.onSurfaceVariant
+            color = if (isSelected) Color.White else colors.onSurfaceVariant
         )
     }
 }
@@ -554,7 +561,7 @@ fun CallHistoryItem(
     call: CallHistoryItem,
     onCallBack: (String) -> Unit
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
     val time = formatTime(call.timestamp)
 
     androidx.compose.material3.ListItem(
@@ -593,11 +600,11 @@ fun CallHistoryItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     when (call.type) {
-                        CallType.INCOMING -> Icon(androidx.compose.material.icons.Icons.Default.CallReceived, contentDescription = "Incoming", tint = OmiChatGreen, modifier = Modifier.size(16.dp))
-                        CallType.OUTGOING -> Icon(androidx.compose.material.icons.Icons.Default.CallMade, contentDescription = "Outgoing", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
-                        CallType.MISSED -> Icon(androidx.compose.material.icons.Icons.Default.CallMissed, contentDescription = "Missed", tint = colors.error, modifier = Modifier.size(16.dp))
+                        CallType.INCOMING -> Icon(Icons.Default.CallReceived, contentDescription = "Incoming", tint = OmiChatGreen, modifier = Modifier.size(16.dp))
+                        CallType.OUTGOING -> Icon(Icons.Default.CallMade, contentDescription = "Outgoing", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
+                        CallType.MISSED -> Icon(Icons.Default.CallMissed, contentDescription = "Missed", tint = colors.error, modifier = Modifier.size(16.dp))
                         CallType.VIDEO_INCOMING, CallType.VIDEO_OUTGOING -> {
-                            Icon(androidx.compose.material.icons.Icons.Default.Videocam, contentDescription = "Video", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Videocam, contentDescription = "Video", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
                             Text(call.type.name.replace("_", " "), fontSize = 12.sp, color = colors.onSurfaceVariant)
                         }
                     }
@@ -609,7 +616,7 @@ fun CallHistoryItem(
         },
         trailing = {
             Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Call,
+                imageVector = Icons.Default.Call,
                 contentDescription = "Call back",
                 tint = OmiChatBlue,
                 modifier = Modifier.padding(start = 8.dp).size(24.dp)

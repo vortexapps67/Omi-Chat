@@ -1,29 +1,45 @@
 name: Build and Release APK
 
 on:
+  # Pushes to main run a full release build so every merge is verifiable.
   push:
+    branches:
+      - main
     tags:
       - 'v*'
+    paths-ignore:
+      - '**.md'
+  # Pull requests get the debug build plus lint and unit tests.
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version name (e.g., 1.0.0)'
+        description: 'Version name to stamp on the release (e.g., 1.0.0)'
         required: true
         type: string
+      publish:
+        description: 'Create a GitHub Release for this run'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
-  packages: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   JAVA_VERSION: '17'
-  GRADLE_VERSION: '8.5'
 
 jobs:
   build:
     name: Build Release APK
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository
@@ -36,143 +52,123 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          cache: gradle
 
+      # No gradle-version on purpose: the committed Gradle wrapper is the single
+      # source of truth for the build tool version, locally and in CI.
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: ${{ env.GRADLE_VERSION }}
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Create local.properties from secrets
+      # app/build.gradle.kts resolves Supabase config from app/.env, falling back
+      # to the environment. Writing the file keeps the value out of the shell
+      # history in later steps.
+      - name: Write app/.env from secrets
         run: |
-          cat > local.properties << EOF
+          mkdir -p app
+          cat > app/.env << EOF
           SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
           SUPABASE_JWKS_URL=${{ secrets.SUPABASE_JWKS_URL }}
           EOF
 
-      - name: Create keystore.properties from secrets
-        run: |
-          cat > keystore.properties << EOF
-          KEYSTORE_PATH=../keystore/release.keystore
-          KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS=${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
-          EOF
-
-      - name: Decode Keystore
+      # Optional: without a keystore the release APK is simply unsigned. The
+      # check lives in the shell rather than a step `if` because step conditions
+      # cannot reliably read the secrets context.
+      - name: Decode release keystore
         if: ${{ env.KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore/release.keystore
-          mkdir -p keystore
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Release APK
-        run: ./gradlew :app:assembleRelease --no-daemon
-
-      - name: Build Universal APK (split per ABI)
-        run: ./gradlew :app:bundleRelease --no-daemon
-
-      - name: Rename APK with version
-        run: |
-          VERSION=${{ github.ref_name }}
-          if [ -z "$VERSION" ] || [ "$VERSION" = "main" ]; then
-            VERSION="v${{ github.event.inputs.version }}"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            mkdir -p keystore
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > keystore/release.keystore
+            echo "KEYSTORE_PATH=keystore/release.keystore" >> "$GITHUB_ENV"
+            echo "Decoded release keystore"
+          else
+            echo "No keystore supplied - release APK will be unsigned"
           fi
-          VERSION=${VERSION#v}
-          
-          # Find and rename APK
-          find app/build/outputs/apk/release -name "*.apk" | while read apk; do
-            new_name="omichat-${VERSION}-$(basename "$apk")"
-            cp "$apk" "omichat-${VERSION}-$(basename "$apk")"
-            echo "APK_PATH=$PWD/$new_name" >> $GITHUB_ENV
-          done
-          
-          # Also copy AAB
-          find app/build/outputs/bundle/release -name "*.aab" | while read aab; do
-            new_name="omichat-${VERSION}-$(basename "$aab")"
-            cp "$aab" "omichat-${VERSION}-$(basename "$aab")"
-            echo "AAB_PATH=$PWD/$new_name" >> $GITHUB_ENV
-          done
 
-      - name: Upload APK as Artifact
+      - name: Export signing credentials
+        if: ${{ env.KEYSTORE_PATH != '' }}
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          {
+            echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}"
+            echo "KEY_ALIAS=${KEY_ALIAS}"
+            echo "KEY_PASSWORD=${KEY_PASSWORD}"
+          } >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Build release AAB
+        run: ./gradlew :app:bundleRelease --stacktrace
+
+      - name: Collect artifacts with version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          if [ -z "$VERSION" ] || [ "$VERSION" = "main" ]; then
+            VERSION="0.0.0-$(git rev-parse --short HEAD)"
+          fi
+          echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+          mkdir -p dist
+          for apk in app/build/outputs/apk/release/*.apk; do
+            [ -e "$apk" ] || continue
+            cp "$apk" "dist/omichat-${VERSION}-$(basename "$apk")"
+          done
+          for aab in app/build/outputs/bundle/release/*.aab; do
+            [ -e "$aab" ] || continue
+            cp "$aab" "dist/omichat-${VERSION}-$(basename "$aab")"
+          done
+          ls -l dist
+
+      - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: omichat-release-apk
-          path: |
-            omichat-*.apk
-            omichat-*.aab
+          name: omichat-${{ env.RELEASE_VERSION }}
+          path: dist/
+          if-no-files-found: error
           retention-days: 30
 
-      - name: Create Release
+      # A GitHub Release is cut for tag pushes, or for a manual run that asked
+      # for one. Plain pushes to main stop at the artifact upload.
+      - name: Create GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Omi Chat ${{ github.ref_name }}
+          name: Omi Chat ${{ env.RELEASE_VERSION }}
           body: |
-            ## Omi Chat ${{ github.ref_name }}
-            
-            ### Changes
-            - See commit history for details
-            
-            ### Downloads
-            - **Universal APK**: Install on any Android device (API 26+)
-            - **AAB**: For Play Store submission
-            
-            ### Installation
-            1. Download the APK file
-            2. Enable "Install from unknown sources" in Android settings
-            3. Install the APK
-            
-            ### Requirements
-            - Android 8.0 (API 26) or higher
-            - Internet connection for Supabase backend
-          draft: false
-          prerelease: false
-          files: |
-            omichat-*.apk
-            omichat-*.aab
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            ## Omi Chat ${{ env.RELEASE_VERSION }}
 
-      - name: Create Release (Manual Trigger)
-        uses: softprops/action-gh-release@v2
-        if: github.event_name == 'workflow_dispatch'
-        with:
-          tag_name: v${{ github.event.inputs.version }}
-          name: Omi Chat v${{ github.event.inputs.version }}
-          body: |
-            ## Omi Chat v${{ github.event.inputs.version }}
-            
             ### Downloads
-            - **Universal APK**: Install on any Android device (API 26+)
-            - **AAB**: For Play Store submission
-            
-            ### Installation
-            1. Download the APK file
-            2. Enable "Install from unknown sources" in Android settings
-            3. Install the APK
-          draft: false
-          prerelease: false
-          files: |
-            omichat-*.apk
-            omichat-*.aab
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - `omichat-*.apk` - universal APK, install on any Android 8.0+ device
+            - `omichat-*.aab` - bundle for Play Store submission
 
-  # Optional: Build debug APK for testing on PRs
-  build-debug:
-    name: Build Debug APK (PR Check)
+            ### Installation
+            1. Download the APK
+            2. Enable "Install from unknown sources" in Android settings
+            3. Install
+
+            ### Notes
+            - Backend is Supabase (auth, Postgres, realtime, storage)
+            - Sign-in requires the Supabase keys baked in at build time
+          fail_on_unmatched_files: true
+          files: dist/omichat-*
+
+  verify:
+    name: Lint and unit tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -182,35 +178,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
-          cache: 'gradle'
+          cache: gradle
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Create local.properties from secrets
+      - name: Write app/.env from secrets
         run: |
-          cat > local.properties << EOF
+          mkdir -p app
+          cat > app/.env << EOF
           SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
           SUPABASE_JWKS_URL=${{ secrets.SUPABASE_JWKS_URL }}
           EOF
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Lint
+        run: ./gradlew :app:lintDebug --stacktrace
 
-      - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon
-
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: omichat-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7
-
-      - name: Run Lint
-        run: ./gradlew :app:lintDebug --no-daemon
-
-      - name: Run Unit Tests
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace

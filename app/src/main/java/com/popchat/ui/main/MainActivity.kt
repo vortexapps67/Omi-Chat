@@ -10,13 +10,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.CallOutline
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.ExploreOutline
-import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -77,10 +73,10 @@ private data class BottomNavItem(
 )
 
 private val bottomNavItems = listOf(
-    BottomNavItem("Chats", "chats", Icons.Outlined.ChatBubbleOutline, Icons.Filled.ChatBubble),
-    BottomNavItem("Calls", "calls", Icons.Outlined.CallOutline, Icons.Filled.Call),
-    BottomNavItem("Discover", "discover", Icons.Outlined.ExploreOutline, Icons.Filled.Explore),
-    BottomNavItem("Profile", "profile", Icons.Outlined.PersonOutline, Icons.Filled.Person),
+    BottomNavItem("Chats", "chats", Icons.Filled.ChatBubbleOutline, Icons.Filled.ChatBubbleOutline),
+    BottomNavItem("Calls", "calls", Icons.Filled.Call, Icons.Filled.Call),
+    BottomNavItem("Discover", "discover", Icons.Filled.Explore, Icons.Filled.Explore),
+    BottomNavItem("Profile", "profile", Icons.Filled.Person, Icons.Filled.Person),
 )
 
 /** Routes that own the full screen and should not carry the bottom bar. */

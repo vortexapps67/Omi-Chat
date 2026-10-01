@@ -1,17 +1,36 @@
 package com.popchat.ui.profile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -19,104 +38,126 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextAlign
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.OutlinedPillButton
 import com.popchat.ui.common.PillButton
+import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatBlue
-import com.popchat.ui.theme.OmiChatGreen
-import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.glassPanel
 
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
-    onSettingsClick: (String) -> Unit
+    onSettingsClick: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Top,
     ) {
-        // Top App Bar
         TopAppBar(
-            title = { Text("Profile", fontWeight = androidx.compose.ui.text.font.FontWeight.Medium) },
+            modifier = Modifier.glassPanel(
+                shape = RoundedCornerShape(0.dp),
+                level = GlassLevel.Thick,
+            ),
+            title = {
+                Text(
+                    text = "Profile",
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            },
             navigationIcon = {
-                androidx.compose.material3.IconButton(onClick = onBack) {
+                IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
-                        contentDescription = "Back"
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
-            )
+                containerColor = Color.Transparent,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
         )
 
-        androidx.compose.foundation.lazy.LazyColumn(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
+            contentPadding = PaddingValues(bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            // Profile Header
             item {
                 ProfileHeader(
                     name = "Akshansh Sinha",
                     handle = "@akshansh",
-                    bio = "Building cool stuff 🚀 | Developer | Coffee addict",
+                    bio = "Building cool stuff | Developer | Coffee addict",
                     avatarUrl = null,
                     stats = ProfileStats(posts = 124, friends = 567, followers = 2341),
-                    onEditClick = onEditProfile
+                    onEditClick = onEditProfile,
                 )
             }
 
-            // Settings sections
             item {
-                SettingsSection(
+                ProfileSettingsSection(
                     title = "Account",
                     items = listOf(
-                        SettingsItem("Chat Settings", androidx.compose.material.icons.Icons.Default.ChatBubbleOutline) { onSettingsClick("chat") },
-                        SettingsItem("Privacy & Security", androidx.compose.material.icons.Icons.Default.Security) { onSettingsClick("privacy") },
-                        SettingsItem("Notifications", androidx.compose.material.icons.Icons.Default.Notifications) { onSettingsClick("notifications") },
-                        SettingsItem("Appearance", androidx.compose.material.icons.Icons.Default.Palette) { onSettingsClick("appearance") }
-                    )
+                        SettingsItem("Chat Settings", Icons.Default.ChatBubbleOutline) {
+                            onSettingsClick("chat")
+                        },
+                        SettingsItem("Privacy & Security", Icons.Default.Security) {
+                            onSettingsClick("privacy")
+                        },
+                        SettingsItem("Notifications", Icons.Default.Notifications) {
+                            onSettingsClick("notifications")
+                        },
+                        SettingsItem("Appearance", Icons.Default.Palette) {
+                            onSettingsClick("appearance")
+                        },
+                    ),
                 )
             }
 
             item {
-                SettingsSection(
+                ProfileSettingsSection(
                     title = "Support",
                     items = listOf(
-                        SettingsItem("Help & Support", androidx.compose.material.icons.Icons.Default.Help) { onSettingsClick("help") },
-                        SettingsItem("About Omi Chat", androidx.compose.material.icons.Icons.Default.Info) { onSettingsClick("about") }
-                    )
+                        SettingsItem("Help & Support", Icons.Default.Help) {
+                            onSettingsClick("help")
+                        },
+                        SettingsItem("About Omi Chat", Icons.Default.Info) {
+                            onSettingsClick("about")
+                        },
+                    ),
                 )
             }
 
-            // Logout
             item {
-                androidx.compose.foundation.layout.Box(
+                PillButton(
+                    text = "Log Out",
+                    onClick = { onSettingsClick("logout") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 24.dp)
-                ) {
-                    PillButton(
-                        text = "Log Out",
-                        onClick = { onSettingsClick("logout") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                        .padding(horizontal = 16.dp),
+                )
             }
         }
     }
 }
 
+/**
+ * Profile identity block.
+ *
+ * The whole header sits on one thick glass pane. Name, handle and bio need a
+ * calm local surface because the mesh backdrop behind them is saturated enough
+ * to make small text shimmer.
+ */
 @Composable
 fun ProfileHeader(
     name: String,
@@ -124,219 +165,230 @@ fun ProfileHeader(
     bio: String,
     avatarUrl: String?,
     stats: ProfileStats,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
+            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .glassPanel(
+                shape = RoundedCornerShape(28.dp),
+                level = GlassLevel.Thick,
+            )
+            .padding(horizontal = 20.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        // Avatar with accent ring
         Box(
-            modifier = Modifier.size(100.dp),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.size(108.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            // Accent ring
+            // Glass halo instead of a flat accent ring — reads as the avatar
+            // sitting behind a lens rather than wearing a hoop.
             Box(
                 modifier = Modifier
                     .size(108.dp)
-                    .background(Color.Transparent, CircleShape)
-                    .border(3.dp, OmiChatBlue, CircleShape)
+                    .glassPanel(
+                        shape = CircleShape,
+                        level = GlassLevel.Thick,
+                        accent = OmiChatBlue,
+                    ),
             )
-            
+
             Avatar(
                 imageUrl = avatarUrl,
                 name = name,
-                size = 100
+                size = 92,
             )
-            
-            // Verified badge
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(4.dp)
+                    .size(26.dp)
+                    .glassPanel(
+                        shape = CircleShape,
+                        level = GlassLevel.Thick,
+                        accent = OmiChatBlue,
+                    )
+                    .border(2.dp, OmiChatBlue, CircleShape),
+                contentAlignment = Alignment.Center,
             ) {
-                Badge(
-                    badgeContent = {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Verified,
-                            contentDescription = "Verified",
-                            tint = androidx.compose.ui.graphics.Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    },
-                    backgroundColor = OmiChatBlue,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    androidx.compose.foundation.layout.Box()
-                }
+                Icon(
+                    imageVector = Icons.Default.Verified,
+                    contentDescription = "Verified",
+                    tint = Color.White,
+                    modifier = Modifier.size(15.dp),
+                )
             }
         }
 
-        // Name
         Text(
             text = name,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = colors.onSurface
+            color = colors.onSurface,
         )
 
-        // Handle
         Text(
             text = handle,
             fontSize = 16.sp,
-            color = colors.onSurfaceVariant
+            color = colors.onSurfaceVariant,
         )
 
-        // Bio
         Text(
             text = bio,
             fontSize = 14.sp,
             color = colors.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.TextAlign.Center,
+            textAlign = TextAlign.Center,
             maxLines = 3,
-            modifier = Modifier.padding(horizontal = 24.dp)
         )
 
-        // Stats
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             StatColumn(count = stats.posts, label = "Posts")
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(40.dp)
-                    .background(colors.outlineVariant)
-                    .padding(horizontal = 24.dp)
-            )
+            StatDivider()
             StatColumn(count = stats.friends, label = "Friends")
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(40.dp)
-                    .background(colors.outlineVariant)
-                    .padding(horizontal = 24.dp)
-            )
+            StatDivider()
             StatColumn(count = stats.followers, label = "Followers")
         }
 
-        // Edit Profile Button
         OutlinedPillButton(
             text = "Edit Profile",
             onClick = onEditClick,
-            modifier = Modifier.width(200.dp)
+            modifier = Modifier.width(200.dp),
         )
     }
 }
 
 @Composable
-fun StatColumn(count: Int, label: String) {
-    val colors = OmiChatTheme.colorScheme
-    Column(
+private fun StatDivider() {
+    Box(
         modifier = Modifier
-            .weight(1f)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 16.dp)
+            .width(1.dp)
+            .height(36.dp)
+            .background(MaterialTheme.colorScheme.outlineVariant),
+    )
+}
+
+@Composable
+private fun StatColumn(count: Int, label: String) {
+    val colors = MaterialTheme.colorScheme
+    Column(
+        modifier = Modifier.weight(1f),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = formatCount(count),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = colors.onSurface
+            color = colors.onSurface,
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = colors.onSurfaceVariant
+            color = colors.onSurfaceVariant,
         )
     }
 }
 
-private fun formatCount(count: Int): String {
-    return when {
-        count >= 1000000 -> "${count / 1000000}M"
-        count >= 1000 -> "${count / 1000}K"
-        else -> count.toString()
-    }
+private fun formatCount(count: Int): String = when {
+    count >= 1_000_000 -> "${count / 1_000_000}M"
+    count >= 1_000 -> "${count / 1_000}K"
+    else -> count.toString()
 }
 
 data class ProfileStats(
     val posts: Int,
     val friends: Int,
-    val followers: Int
+    val followers: Int,
 )
 
 data class SettingsItem(
     val title: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val onClick: () -> Unit,
-    val trailing: (@Composable () -> Unit)? = null
+    val trailing: (@Composable () -> Unit)? = null,
 )
 
+/**
+ * Grouped profile settings block on a single frosted pane.
+ *
+ * Named `ProfileSettingsSection` because the full Settings screen has its own
+ * `SettingsSection` in `com.popchat.ui.settings` — same look, different call
+ * sites, and keeping them separate stops the two from drifting apart.
+ */
 @Composable
-fun SettingsSection(
+fun ProfileSettingsSection(
     title: String,
-    items: List<SettingsItem>
+    items: List<SettingsItem>,
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
+
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Section title
         Text(
             text = title.uppercase(),
             fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             color = colors.onSurfaceVariant,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp),
         )
 
-        // Items
-        items.forEachIndexed { index, item ->
-            val isLast = index == items.lastIndex
-            androidx.compose.material3.ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(colors.surface)
-                    .clickable(onClick = item.onClick),
-                leading = {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .glassPanel(
+                    shape = RoundedCornerShape(20.dp),
+                    level = GlassLevel.Regular,
+                )
+                .padding(vertical = 4.dp),
+        ) {
+            items.forEachIndexed { index, item ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = item.onClick)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = null,
-                        tint = colors.onSurfaceVariant
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(22.dp),
                     )
-                },
-                headlineContent = {
+                    Spacer(modifier = Modifier.size(16.dp))
                     Text(
                         text = item.title,
                         fontSize = 16.sp,
-                        color = colors.onSurface
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f),
                     )
-                },
-                trailing = item.trailing ?? {
-                    Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant.copy(alpha = 0.5f)
+                    item.trailing?.invoke()
+                        ?: Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = colors.onSurfaceVariant.copy(alpha = 0.45f),
+                            modifier = Modifier.size(20.dp),
+                        )
+                }
+
+                if (index != items.lastIndex) {
+                    Spacer(
+                        modifier = Modifier
+                            .padding(start = 54.dp)
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(colors.outlineVariant.copy(alpha = 0.6f)),
                     )
                 }
-            )
-            
-            if (!isLast) {
-                androidx.compose.material3.Divider(
-                    modifier = Modifier.padding(start = 72.dp),
-                    color = colors.outlineVariant,
-                    thickness = 0.5.dp
-                )
             }
         }
     }
