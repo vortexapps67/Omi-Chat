@@ -277,6 +277,8 @@ fun SettingsSection(
                                 tint = colors.onSurfaceVariant.copy(alpha = 0.45f),
                                 modifier = Modifier.size(20.dp),
                             )
+                        } else {
+                            null
                         }
                 }
 

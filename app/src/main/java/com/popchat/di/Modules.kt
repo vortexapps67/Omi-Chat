@@ -12,8 +12,6 @@ import com.popchat.data.repository.impl.MessageRepositoryImpl
 import com.popchat.data.repository.impl.UserRepositoryImpl
 import com.popchat.data.supabase.SupabaseClientProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ApplicationScoped
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

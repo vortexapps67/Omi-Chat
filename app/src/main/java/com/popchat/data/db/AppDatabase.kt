@@ -14,6 +14,7 @@ import com.popchat.data.model.ChatEntity
 import com.popchat.data.model.ChatParticipantEntity
 import com.popchat.data.model.MessageEntity
 import com.popchat.data.model.UserEntity
+import java.util.concurrent.TimeUnit
 
 @Database(
     entities = [
@@ -34,6 +35,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun chatParticipantDao(): ChatParticipantDao
 
     companion object {
+        private const val DATABASE_NAME = "omichat.db"
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -42,10 +45,12 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "popchat.db"
+                    DATABASE_NAME
                 )
                     .fallbackToDestructiveMigration()
-                    .setAutoCloseTimeout(30)
+                    // Signature is (long, TimeUnit); the single-argument overload
+                    // that took seconds was removed.
+                    .setAutoCloseTimeout(30, TimeUnit.SECONDS)
                     .enableMultiInstanceInvalidation()
                     .build()
                 INSTANCE = instance

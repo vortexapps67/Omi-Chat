@@ -43,6 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.datetime.toLocalDateTime
 import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.FilterChip
 import com.popchat.ui.common.OutlinedInputField
@@ -283,7 +285,7 @@ val sampleChats = listOf(
         id = "1",
         name = "Riya Sharma",
         lastMessage = "Hey! Are we still on for tomorrow?",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(300),
+        timestamp = kotlinx.datetime.Clock.System.now() - 300.seconds,
         unreadCount = 2,
         avatarUrl = null,
         isGroup = false,
@@ -294,7 +296,7 @@ val sampleChats = listOf(
         id = "2",
         name = "Akshansh Sinha",
         lastMessage = "Just sent you the file \uD83D\uDCCE",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3600),
+        timestamp = kotlinx.datetime.Clock.System.now() - 3600.seconds,
         unreadCount = 0,
         avatarUrl = null,
         isGroup = false,
@@ -304,7 +306,7 @@ val sampleChats = listOf(
         id = "3",
         name = "Dev Team \uD83D\uDE80",
         lastMessage = "Riya: Meeting at 3pm today",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(7200),
+        timestamp = kotlinx.datetime.Clock.System.now() - 7200.seconds,
         unreadCount = 5,
         avatarUrl = null,
         isGroup = true,
@@ -314,7 +316,7 @@ val sampleChats = listOf(
         id = "4",
         name = "Design Squad",
         lastMessage = "Akshansh: New mockups uploaded",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(86400),
+        timestamp = kotlinx.datetime.Clock.System.now() - 86400.seconds,
         unreadCount = 0,
         avatarUrl = null,
         isGroup = true,
@@ -324,7 +326,7 @@ val sampleChats = listOf(
         id = "5",
         name = "Sarah Johnson",
         lastMessage = "\uD83D\uDCF7 Photo",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(172800),
+        timestamp = kotlinx.datetime.Clock.System.now() - 172800.seconds,
         unreadCount = 1,
         avatarUrl = null,
         isGroup = false,
@@ -333,12 +335,19 @@ val sampleChats = listOf(
     ),
 )
 
+/**
+ * Relative chat-list timestamp: elapsed time for the last week, then a date.
+ *
+ * Works in whole minutes from a Duration rather than in epoch milliseconds,
+ * so it does not depend on `toEpochMilliseconds()` and the arithmetic stays
+ * obvious.
+ */
 private fun formatChatTime(instant: kotlinx.datetime.Instant): String {
-    val now = kotlinx.datetime.Instant.now()
-    val diff = now.epochMilliseconds - instant.epochMilliseconds
-    val minutes = diff / (1000 * 60)
-    val hours = minutes / 60
-    val days = hours / 24
+    val elapsed = kotlinx.datetime.Clock.System.now() - instant
+
+    val minutes = elapsed.inWholeMinutes
+    val hours = elapsed.inWholeHours
+    val days = elapsed.inWholeDays
 
     return when {
         minutes < 1L -> "now"

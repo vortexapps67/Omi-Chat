@@ -3,6 +3,7 @@ package com.popchat.data.repository.impl
 import com.popchat.data.db.AppDatabase
 import com.popchat.data.model.ChatParticipantEntity
 import com.popchat.data.repository.ChatParticipantRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton

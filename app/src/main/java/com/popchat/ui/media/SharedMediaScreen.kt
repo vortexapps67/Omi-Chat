@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +28,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.PlayCircleFill
+import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -140,6 +140,7 @@ fun MediaGrid() {
         items(sampleMediaItems) { item ->
             MediaGridItem(item = item)
         }
+        // item() is a LazyGridScope member, so it needs no import.
         item {
             UploadCard()
         }
@@ -178,7 +179,7 @@ fun MediaGridItem(item: MediaItem) {
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Default.PlayCircleFill,
+                    imageVector = Icons.Default.PlayCircleFilled,
                     contentDescription = "Play video",
                     tint = Color.White,
                     modifier = Modifier.size(40.dp),

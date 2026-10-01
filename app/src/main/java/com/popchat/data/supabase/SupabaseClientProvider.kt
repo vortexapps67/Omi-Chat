@@ -3,8 +3,9 @@ package com.popchat.data.supabase
 import android.content.Context
 import com.popchat.BuildConfig
 import com.popchat.util.AppLogger
-import io.github.jan_tennert.supabase_kt.SupabaseClient
-import io.github.jan_tennert.supabase_kt.SupabaseClientBuilder
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.gotrue.Auth
 
 object SupabaseClientProvider {
 
@@ -18,21 +19,26 @@ object SupabaseClientProvider {
             synchronized(this) {
                 if (instance == null) {
                     val supabaseUrl = BuildConfig.SUPABASE_URL
-                    val supabaseAnonKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY
+                    val supabasePublishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY
 
-                    if (supabaseUrl.isBlank() || supabaseAnonKey.isBlank()) {
+                    if (supabaseUrl.isBlank() || supabasePublishableKey.isBlank()) {
                         AppLogger.w(TAG, "Supabase credentials not configured. Please set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in .env or GitHub secrets")
                         return
                     }
 
-                    instance = SupabaseClientBuilder(supabaseUrl, supabaseAnonKey)
-                        .apply {
-                            // Enable auto-refresh of auth tokens
-                            autoRefreshToken = true
-                            // Log level for debugging
-                            // logLevel = LogLevel.DEBUG
+                    // SupabaseClientBuilder's constructor and build() are
+                    // internal to the library; createSupabaseClient is the
+                    // supported entry point. Per-plugin settings are applied
+                    // with install(), and the auth knobs live on AuthConfig.
+                    instance = createSupabaseClient(supabaseUrl, supabasePublishableKey) {
+                        install(Auth) {
+                            // Keep the stored session fresh without the user
+                            // having to sign in again on every launch.
+                            autoSaveToStorage = true
+                            autoLoadFromStorage = true
+                            alwaysAutoRefresh = true
                         }
-                        .build()
+                    }
 
                     AppLogger.i(TAG, "Supabase client initialized")
                 }

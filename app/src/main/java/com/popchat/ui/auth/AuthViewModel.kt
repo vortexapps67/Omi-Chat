@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.popchat.data.repository.AuthRepository
 import com.popchat.data.repository.AuthRepository.AuthState
+import com.popchat.data.supabase.model.AuthResponse
 import com.popchat.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +37,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    suspend fun signUp(email: String, password: String, username: String, displayName: String): Result<AuthRepository.AuthResponse> {
+    suspend fun signUp(email: String, password: String, username: String, displayName: String): Result<AuthResponse> {
         _uiState.value = AuthUiState.Loading
         return try {
             val response = authRepository.signUp(email, password, username, displayName)
@@ -50,7 +51,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    suspend fun signIn(email: String, password: String): Result<AuthRepository.AuthResponse> {
+    suspend fun signIn(email: String, password: String): Result<AuthResponse> {
         _uiState.value = AuthUiState.Loading
         return try {
             val response = authRepository.signIn(email, password)

@@ -1,0 +1,32 @@
+# Line endings.
+#
+# The repo is developed on Windows (core.autocrlf=true) but built on Linux in
+# CI. Without this file a checkout can rewrite the Gradle wrapper scripts to
+# CRLF, and `./gradlew` then fails at the shebang before Gradle ever starts.
+# Pinning the wrapper - and everything else that is text - to LF makes the
+# result identical on both platforms.
+* text=auto eol=lf
+
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+*.sh text eol=lf
+
+# Binary assets must never be line-ending-converted or diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.jar binary
+*.apk binary
+*.aab binary
+*.keystore binary
+*.jks binary
+
+# Generated build output and local secrets.
+build/ -diff linguist-generated=true
+app/.env -diff
+.env -diff
+keystore/ -diff
+
+# Lock down the diff view for things that are painful to review as generated text.
+*.jar -diff

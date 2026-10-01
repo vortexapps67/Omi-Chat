@@ -2,19 +2,21 @@ package com.popchat.data.repository.impl
 
 import com.popchat.data.db.AppDatabase
 import com.popchat.data.model.ChatEntity
-import com.popchat.data.model.ChatParticipantEntity
-import com.popchat.data.model.UserEntity
+import com.popchat.data.repository.ChatParticipantRepository
 import com.popchat.data.repository.ChatRepository
 import com.popchat.data.repository.ChatWithParticipants
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ChatRepositoryImpl @Inject constructor(
     private val database: AppDatabase,
-    private val participantRepository: com.popchat.data.repository.ChatParticipantRepository
+    private val participantRepository: ChatParticipantRepository
 ) : ChatRepository {
 
     override suspend fun getChat(chatId: String): ChatEntity? {
@@ -69,18 +71,36 @@ class ChatRepositoryImpl @Inject constructor(
         return database.chatDao().searchChats("%$query%")
     }
 
+    override suspend fun findDirectChat(firstUserId: String, secondUserId: String): ChatEntity? {
+        return database.chatDao().findDirectChat(firstUserId, secondUserId)
+    }
+
     override suspend fun syncChatsFromSupabase() {
         // TODO: Implement Supabase sync
     }
 
+    /**
+     * Chat plus its resolved participants.
+     *
+     * `chat_participants` rows hold ids only, so the profile data has to be
+     * joined in from the users table. That join is itself a Flow, so it is
+     * flat-mapped: when the roster changes the previous user query is cancelled
+     * and a new one starts, which keeps the result live instead of freezing on
+     * whatever the first roster happened to be. Participants that have not been
+     * synced into the local users table yet simply do not appear.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeChatWithParticipants(chatId: String) = combine(
         database.chatDao().getChat(chatId),
-        participantRepository.observeParticipants(chatId)
-    ) { chat, participants ->
-        val users = participants.mapNotNull { p ->
-            // We'd need to fetch user entities - simplified for now
-            null
+        participantRepository.observeParticipants(chatId).flatMapLatest { participants ->
+            val userIds = participants.map { it.userId }
+            if (userIds.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                database.userDao().getUsers(userIds)
+            }
         }
+    ) { chat, users ->
         ChatWithParticipants(chat!!, users)
     }.distinctUntilChanged()
 }

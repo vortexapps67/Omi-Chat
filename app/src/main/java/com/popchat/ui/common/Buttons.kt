@@ -28,8 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton as MaterialTextButton
-import androidx.compose.material3.TextButtonDefaults
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -192,10 +190,19 @@ fun TextButton(
     color: Color = OmiChatBlue,
     fontSize: Int = 14,
 ) {
-    MaterialTextButton(
+    // Material 3 1.2.1 - the version this app compiles against - has no
+    // TextButton composable; that arrived in 1.3.0. A plain Button with the
+    // text-button colours and zero elevation is the equivalent.
+    Button(
         onClick = onClick,
         modifier = modifier,
-        colors = TextButtonDefaults.textButtonColors(contentColor = color),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 0.dp,
+            disabledElevation = 0.dp,
+        ),
+        colors = ButtonDefaults.textButtonColors(contentColor = color),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
     ) {
         Text(
             text = text,
@@ -335,7 +342,7 @@ fun OutlinedInputField(
         },
         singleLine = singleLine,
         maxLines = maxLines,
-        visualTransformation = visualTransformation,
+        visualTransformation = visualTransformation ?: VisualTransformation.None,
         keyboardOptions = keyboardOptions,
         interactionSource = interactionSource,
         shape = shape,

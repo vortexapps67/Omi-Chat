@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.popchat.data.db.converters.Converters
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -28,13 +29,15 @@ data class UserEntity(
             return UserEntity(
                 id = user.id,
                 email = user.email ?: "",
-                username = user.userMetadata?.getString("username") ?: user.email?.takeBefore("@") ?: "user",
+                username = user.userMetadata?.getString("username")
+                    ?: user.email?.substringBefore("@")
+                    ?: "user",
                 displayName = user.userMetadata?.getString("display_name"),
                 avatarUrl = user.userMetadata?.getString("avatar_url"),
                 status = "online",
                 lastSeen = null,
                 createdAt = Instant.parse(user.createdAt),
-                updatedAt = Instant.now(),
+                updatedAt = Clock.System.now(),
                 isCurrentUser = isCurrentUser
             )
         }

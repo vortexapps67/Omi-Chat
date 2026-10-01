@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,8 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextAlign
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
@@ -273,7 +274,9 @@ private fun StatDivider() {
 }
 
 @Composable
-private fun StatColumn(count: Int, label: String) {
+// Declared as a RowScope extension so Modifier.weight(1f) resolves: the weight
+// modifier only exists inside a Row or Column receiver scope, not at top level.
+private fun RowScope.StatColumn(count: Int, label: String) {
     val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier.weight(1f),
@@ -306,11 +309,18 @@ data class ProfileStats(
     val followers: Int,
 )
 
+/**
+ * One row in a grouped settings block.
+ *
+ * [onClick] is declared last so the usual `SettingsItem("Title", icon) { ... }`
+ * call site binds the trailing lambda to the click handler rather than to
+ * [trailing].
+ */
 data class SettingsItem(
     val title: String,
     val icon: ImageVector,
-    val onClick: () -> Unit,
     val trailing: (@Composable () -> Unit)? = null,
+    val onClick: () -> Unit,
 )
 
 /**

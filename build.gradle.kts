@@ -1,26 +1,20 @@
-buildscript {
-    dependencies {
-        val agpVersion = libs.versions.androidGradlePlugin.get()
-        val kotlinVersion = libs.versions.kotlin.get()
-        add("classpath", "com.android.tools.build:gradle:$agpVersion")
-        add("classpath", "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        add("classpath", "com.google.gms:google-services:4.4.2")
-    }
-}
-
+// Plugins are resolved from the version catalog and applied per-module
+// (see app/build.gradle.kts). The `plugins {}` block with `apply false` is what
+// puts them on the classpath for subprojects; a buildscript classpath plus
+// repositories here would duplicate that.
 plugins {
     id("com.android.application") version libs.versions.androidGradlePlugin.get() apply false
     id("org.jetbrains.kotlin.android") version libs.versions.kotlin.get() apply false
-    id("com.google.gms.google-services") version "4.4.2" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version libs.versions.kotlin.get() apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version libs.versions.kotlin.get() apply false
+    id("com.google.dagger.hilt.android") version libs.versions.hilt.get() apply false
+    id("com.google.devtools.ksp") version libs.versions.ksp.get() apply false
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// No allprojects { repositories { } } block on purpose. settings.gradle.kts sets
+// RepositoriesMode.FAIL_ON_PROJECT_REPOS, so declaring repositories in a build
+// script aborts the build with "repository 'Google' was added by build file".
 
 tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }

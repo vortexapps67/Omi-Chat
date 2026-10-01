@@ -3,6 +3,7 @@ package com.popchat.data.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 @Entity(
@@ -26,11 +27,14 @@ import kotlinx.datetime.Instant
 data class ChatParticipantEntity(
     val chatId: String,
     val userId: String,
-    val role: String = ChatParticipantEntity.ROLE_MEMBER,
-    val joinedAt: Instant = Instant.now(),
-    val lastReadMessageId: String?,
+    val role: String = ROLE_MEMBER,
+    val joinedAt: Instant = Clock.System.now(),
+    // A joining member has read nothing yet and is not muted, so these are
+    // nullable but defaulted - otherwise every insert site has to spell out
+    // "no read marker, no mute" for it to mean anything.
+    val lastReadMessageId: String? = null,
     val isMuted: Boolean = false,
-    val mutedUntil: Instant?
+    val mutedUntil: Instant? = null
 ) {
     companion object {
         const val ROLE_OWNER = "owner"

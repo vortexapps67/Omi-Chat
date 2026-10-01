@@ -19,18 +19,24 @@ data class JsonObject(
     private val map: Map<String, JsonValue>
 ) {
     fun getString(key: String): String? {
-        val value = map[key]
-        return when (value) {
-            is JsonValue.String -> value.value
-            is JsonValue.Number -> value.value.toString()
-            is JsonValue.Boolean -> value.value.toString()
+        val found = map[key]
+        // JSON has one number type, so a numeric metadata value is read back
+        // as text. Nested objects and arrays have no sensible scalar
+        // rendering here and return null.
+        return when (found) {
+            is JsonValue.String -> found.value
+            is JsonValue.Number -> found.value.toString()
+            is JsonValue.Boolean -> found.value.toString()
             else -> null
         }
     }
 
     fun getBool(key: String): Boolean? {
-        val value = map[key]
-        return if (value is JsonValue.Boolean) value.value else null
+        val found = map[key]
+        return when (found) {
+            is JsonValue.Boolean -> found.value
+            else -> null
+        }
     }
 
     fun getJsonObject(key: String): JsonObject? {
@@ -39,17 +45,31 @@ data class JsonObject(
     }
 }
 
+/**
+ * Minimal JSON value model, kept app-local so the domain layer does not depend
+ * on supabase-kt's serialisation types.
+ *
+ * The nested class names shadow the Kotlin builtins of the same name inside
+ * their own scope, so the payload types are written fully qualified:
+ * `data class String(val value: String)` would declare a `JsonValue.String`
+ * whose `value` is another `JsonValue.String`, and the same for `Boolean`.
+ */
 sealed interface JsonValue {
     @Serializable
-    data class String(val value: String) : JsonValue
+    data class String(val value: kotlin.String) : JsonValue
+
     @Serializable
     data class Number(val value: Double) : JsonValue
+
     @Serializable
-    data class Boolean(val value: Boolean) : JsonValue
+    data class Boolean(val value: kotlin.Boolean) : JsonValue
+
     @Serializable
     data class Object(val value: JsonObject) : JsonValue
+
     @Serializable
     data class Array(val value: List<JsonValue>) : JsonValue
+
     @Serializable
     object Null : JsonValue
 }

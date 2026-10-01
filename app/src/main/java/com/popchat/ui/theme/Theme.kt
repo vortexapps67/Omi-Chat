@@ -66,7 +66,6 @@ private val LightColorScheme = lightColorScheme(
     outline = Color(0xFFCBD6E2),
     outlineVariant = Color(0xFFE3EAF2),
     scrim = Color.Black,
-    shadow = Color.Black,
     inverseSurface = Charcoal,
     inverseOnSurface = OffWhite,
     inversePrimary = OmiChatBlueLight,
@@ -102,7 +101,6 @@ private val DarkColorScheme = darkColorScheme(
     outline = Color(0xFF5A6675),
     outlineVariant = Color(0xFF3A4453),
     scrim = Color.Black,
-    shadow = Color.Black,
     inverseSurface = OffWhite,
     inverseOnSurface = Charcoal,
     inversePrimary = OmiChatBlue,
@@ -129,7 +127,7 @@ fun OmiChatTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        shapes = Shapes,
+        shapes = OmiChatShapes,
     ) {
         CompositionLocalProvider(
             LocalGlassEnabled provides glass,

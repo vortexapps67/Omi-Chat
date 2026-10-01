@@ -6,16 +6,35 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.CallEnd
+import androidx.compose.material.icons.filled.CallMade
+import androidx.compose.material.icons.filled.CallMissed
+import androidx.compose.material.icons.filled.CallReceived
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material.icons.filled.SwitchCamera
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,7 +45,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -36,10 +54,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
+import com.popchat.ui.common.CircleIconButton
 import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatBlue
 import com.popchat.ui.theme.OmiChatGreen
 import com.popchat.ui.theme.glassPanel
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * Colour the call surfaces are built from.
+ *
+ * Call screens are deliberately dark and saturated rather than glass-on-mesh:
+ * the participant has to stay the focus, and a frosted pane over a moving
+ * backdrop would compete with the video. Glass is used only for the chrome
+ * floating over that backdrop - the control pads, the incoming-call pill and
+ * the picture-in-picture tile - where it separates the control from the feed
+ * without tinting the feed itself.
+ */
+private val CallDeepBlue = Color(0xFF0D47A1)
+private val CallMidBlue = Color(0xFF1565C0)
+private val CallBrandBlue = Color(0xFF1E88E5)
+private val CallTeal = Color(0xFF006064)
+private val CallDanger = Color(0xFFEF4444)
+
+/** White glass tint, since call chrome sits on dark surfaces, not the app's light theme. */
+private val CallGlassTint = Color(0xFFFFFFFF)
 
 @Composable
 fun VoiceCallScreen(
@@ -60,17 +105,16 @@ fun VoiceCallScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        // Call surfaces are dark by design so the participant stays the focus;
-        // the gradient replaces the mesh backdrop here.
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.radialGradient(
+                .background(
+                    Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFF0D47A1), // Deep blue
-                            Color(0xFF1565C0),
-                            Color(0xFF1E88E5), // OmiChatBlue
-                            Color(0xFF006064), // Teal
+                            CallDeepBlue,
+                            CallMidBlue,
+                            CallBrandBlue,
+                            CallTeal,
                         ),
                     ),
                 ),
@@ -105,24 +149,17 @@ fun VoiceCallScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            // Call type indicator
             if (isIncoming) {
-                Badge(
-                    badgeContent = {
-                        Text(
-                            text = "Voice Call",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
-                    },
-                    backgroundColor = OmiChatBlue.copy(alpha = 0.9f)
-                ) {
-                    androidx.compose.foundation.layout.Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                GlassPill(tint = CallGlassTint) {
+                    Text(
+                        text = "Voice Call",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
                 }
             }
 
-            // Avatar
             Avatar(
                 imageUrl = contactAvatar,
                 name = contactName,
@@ -130,7 +167,6 @@ fun VoiceCallScreen(
                 showOnlineIndicator = false
             )
 
-            // Name and status
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -149,7 +185,6 @@ fun VoiceCallScreen(
                 )
             }
 
-            // Call duration (for active calls)
             if (!isIncoming) {
                 Text(
                     text = "02:34",
@@ -159,11 +194,9 @@ fun VoiceCallScreen(
                 )
             }
 
-            // Call Controls
             Row(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Mute
                 CallControlButton(
                     icon = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic,
                     label = "Mute",
@@ -174,7 +207,6 @@ fun VoiceCallScreen(
                     }
                 )
 
-                // Speaker
                 CallControlButton(
                     icon = if (isSpeakerOn) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
                     label = "Speaker",
@@ -185,7 +217,6 @@ fun VoiceCallScreen(
                     }
                 )
 
-                // Video
                 CallControlButton(
                     icon = Icons.Default.Videocam,
                     label = "Video",
@@ -193,12 +224,10 @@ fun VoiceCallScreen(
                 )
             }
 
-            // End Call - prominent red button
             if (isIncoming) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(40.dp)
                 ) {
-                    // Decline
                     CallControlButton(
                         icon = Icons.Default.CallEnd,
                         label = "Decline",
@@ -207,7 +236,6 @@ fun VoiceCallScreen(
                         onClick = onDecline
                     )
 
-                    // Accept
                     CallControlButton(
                         icon = Icons.Default.Call,
                         label = "Accept",
@@ -246,22 +274,19 @@ fun VideoCallScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Full screen video feed (remote)
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Black, Color(0xFF1A1A2E), Color.Black)
+                    )
+                )
         ) {
-            // Placeholder for remote video
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                // Gradient background as placeholder
-                .background(androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = listOf(Color.Black, Color(0xFF1A1A2E), Color.Black)
-                    )
-                )
-                
-                // Contact name overlay
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -280,34 +305,17 @@ fun VideoCallScreen(
                 }
             }
 
-            // Picture-in-Picture local video
-            Box(
-                modifier = Modifier
-                    .size(120.dp, 160.dp)
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF333333), RoundedCornerShape(16.dp))
-                        .border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-                ) {
-                    Text(
-                        text = "You",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.5f)
-                    )
-                }
-            }
-
-            // Call duration
             if (!isIncoming) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = 64.dp)
+                        .glassPanel(
+                            shape = RoundedCornerShape(20.dp),
+                            level = GlassLevel.Thin,
+                            accent = CallGlassTint,
+                        )
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "02:34",
@@ -317,9 +325,26 @@ fun VideoCallScreen(
                     )
                 }
             }
+
+            // Picture-in-picture local video. Opaque, because a frosted pane
+            // over a placeholder would just look like a grey rectangle.
+            Box(
+                modifier = Modifier
+                    .size(120.dp, 160.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .background(Color(0xFF333333), RoundedCornerShape(16.dp))
+                    .border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isFrontCamera) "You" else "You (rear)",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.5f)
+                )
+            }
         }
 
-        // Bottom controls
         if (isIncoming) {
             Row(
                 modifier = Modifier
@@ -383,9 +408,17 @@ fun VideoCallScreen(
     }
 }
 
+/**
+ * A round call control.
+ *
+ * The mute/speaker/flip pads are frosted so they read as floating over the
+ * call. Accept and end-call stay solid: they are the two actions a user has to
+ * find instantly under pressure, and a translucent button is the wrong thing
+ * to put under a thumb that has to be certain.
+ */
 @Composable
 fun CallControlButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     label: String,
     isActive: Boolean = false,
     isPrimary: Boolean = false,
@@ -393,13 +426,17 @@ fun CallControlButton(
     size: Int = 56,
     onClick: () -> Unit
 ) {
-    val colors = MaterialTheme.colorScheme
-    
-    val (backgroundColor, iconColor) = when {
-        isDestructive -> androidx.compose.ui.graphics.Color(0xFFEF4444) to Color.White
-        isPrimary -> OmiChatBlue to Color.White
-        isActive -> OmiChatBlue.copy(alpha = 0.2f) to OmiChatBlue
-        else -> colors.surfaceContainerHighest.copy(alpha = 0.3f) to Color.White
+    val isSolid = isPrimary || isDestructive
+
+    val backgroundColor = when {
+        isDestructive -> CallDanger
+        isPrimary -> CallBrandBlue
+        else -> Color.White.copy(alpha = if (isActive) 0.28f else 0.16f)
+    }
+    val iconColor = when {
+        isDestructive || isPrimary -> Color.White
+        isActive -> Color.White
+        else -> Color.White.copy(alpha = 0.85f)
     }
 
     Column(
@@ -409,16 +446,26 @@ fun CallControlButton(
         Box(
             modifier = Modifier
                 .size(size.dp)
+                .then(
+                    if (isSolid) {
+                        Modifier
+                    } else {
+                        Modifier.glassPanel(
+                            shape = CircleShape,
+                            level = GlassLevel.Thin,
+                            accent = CallGlassTint,
+                        )
+                    }
+                )
                 .background(backgroundColor, CircleShape)
-                .pointerInput(Unit) {
-                    androidx.compose.foundation.gestures.detectTapGestures(onTap = onClick)
-                }
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
                 tint = iconColor,
-                modifier = Modifier.size(28.dp).padding(8.dp)
+                modifier = Modifier.size((size * 0.5f).dp)
             )
         }
 
@@ -426,24 +473,31 @@ fun CallControlButton(
             text = label,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.White
+            color = Color.White.copy(alpha = 0.9f)
         )
     }
 }
 
+/**
+ * Small frosted label. Named for what it is rather than `Badge`, which
+ * Material 3 already defines with an incompatible signature.
+ */
 @Composable
-fun Badge(
-    badgeContent: @Composable () -> Unit,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier
+private fun GlassPill(
+    tint: Color = CallGlassTint,
+    content: @Composable () -> Unit,
 ) {
     Box(
-        modifier = modifier
-            .background(backgroundColor, RoundedCornerShape(16.dp))
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+        modifier = Modifier
+            .glassPanel(
+                shape = RoundedCornerShape(16.dp),
+                level = GlassLevel.Thin,
+                accent = tint,
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        badgeContent()
+        content()
     }
 }
 
@@ -456,76 +510,93 @@ fun CallHistoryScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
     ) {
-        // Top App Bar
-        androidx.compose.material3.TopAppBar(
-            title = { Text("Calls") },
-            navigationIcon = {
-                androidx.compose.material3.IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-            },
-            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            )
-        )
-
-        // Filter tabs
-        androidx.compose.foundation.layout.Box(
+        // Hand-rolled app bar rather than TopAppBar: the title and back button
+        // need to sit on a frosted bar, and TopAppBar takes its container
+        // colour as a plain colour with no glass treatment.
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .glassPanel(
+                    shape = RoundedCornerShape(0.dp),
+                    level = GlassLevel.Thick,
+                    grain = false,
+                )
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            androidx.compose.foundation.lazy.LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(listOf("All", "Missed", "Outgoing", "Incoming")) { filter ->
-                    FilterChip(
-                        text = filter,
-                        isSelected = filter == "All",
-                        onClick = { /* Filter */ }
-                    )
-                }
+            CircleIconButton(
+                icon = Icons.Default.ArrowBack,
+                onClick = onBack,
+                backgroundColor = OmiChatBlue.copy(alpha = 0.1f),
+                iconColor = MaterialTheme.colorScheme.onSurface,
+                contentDescription = "Back",
+            )
+
+            Text(
+                text = "Calls",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp)
+            )
+        }
+
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(listOf("All", "Missed", "Outgoing", "Incoming")) { filter ->
+                CallFilterChip(
+                    text = filter,
+                    isSelected = filter == "All",
+                    onClick = { /* Filtering is wired up once call history is persisted. */ }
+                )
             }
         }
 
-        // Call history list
-        androidx.compose.foundation.lazy.LazyColumn(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(callHistory) { call ->
-                CallHistoryItem(call = call, onCallBack = onCallBack)
-                androidx.compose.material3.Divider(
-                    modifier = Modifier.padding(start = 72.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    thickness = 0.5.dp
-                )
+                CallHistoryRow(call = call, onCallBack = onCallBack)
             }
         }
     }
 }
 
 @Composable
-fun FilterChip(
+private fun CallFilterChip(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(
-                color = if (isSelected) OmiChatBlue else colors.surfaceContainerHighest,
-                shape = androidx.compose.ui.graphics.RoundedCornerShape(20.dp)
+            .then(
+                if (isSelected) {
+                    Modifier
+                } else {
+                    Modifier.glassPanel(
+                        shape = RoundedCornerShape(20.dp),
+                        level = GlassLevel.Thin,
+                    )
+                }
             )
-            .pointerInput(Unit) {
-                androidx.compose.foundation.gestures.detectTapGestures(onTap = onClick)
-            }
+            .background(
+                color = if (isSelected) OmiChatBlue else colors.surfaceVariant.copy(alpha = 0.35f),
+                shape = RoundedCornerShape(20.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = text,
@@ -540,7 +611,7 @@ data class CallHistoryItem(
     val name: String,
     val avatarUrl: String?,
     val type: CallType,
-    val timestamp: kotlinx.datetime.Instant,
+    val timestamp: Instant,
     val duration: String?
 )
 
@@ -548,95 +619,147 @@ enum class CallType {
     INCOMING, OUTGOING, MISSED, VIDEO_INCOMING, VIDEO_OUTGOING
 }
 
-val callHistory = listOf(
-    CallHistoryItem("Riya Sharma", null, CallType.INCOMING, kotlinx.datetime.Instant.now().minusSeconds(3600), "05:23"),
-    CallHistoryItem("Akshansh Sinha", null, CallType.OUTGOING, kotlinx.datetime.Instant.now().minusSeconds(7200), "12:45"),
-    CallHistoryItem("Sarah Johnson", null, CallType.MISSED, kotlinx.datetime.Instant.now().minusSeconds(86400), null),
-    CallHistoryItem("Dev Team 🚀", null, CallType.VIDEO_INCOMING, kotlinx.datetime.Instant.now().minusSeconds(172800), "08:12"),
-    CallHistoryItem("Design Squad", null, CallType.VIDEO_OUTGOING, kotlinx.datetime.Instant.now().minusSeconds(259200), "15:30")
-)
+/**
+ * Placeholder history.
+ *
+ * Real entries arrive from the `calls` table once it is persisted; until then
+ * this is what the screen renders so the layout can be reviewed.
+ */
+private val callHistory: List<CallHistoryItem> = run {
+    val now = Clock.System.now()
+    listOf(
+        CallHistoryItem("Riya Sharma", null, CallType.INCOMING, now - 1.hours, "05:23"),
+        CallHistoryItem("Akshansh Sinha", null, CallType.OUTGOING, now - 2.hours, "12:45"),
+        CallHistoryItem("Sarah Johnson", null, CallType.MISSED, now - 86400.seconds, null),
+        CallHistoryItem("Dev Team", null, CallType.VIDEO_INCOMING, now - 172800.seconds, "08:12"),
+        CallHistoryItem("Design Squad", null, CallType.VIDEO_OUTGOING, now - 259200.seconds, "15:30"),
+    )
+}
 
 @Composable
-fun CallHistoryItem(
+private fun CallHistoryRow(
     call: CallHistoryItem,
     onCallBack: (String) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val time = formatTime(call.timestamp)
 
-    androidx.compose.material3.ListItem(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(colors.surface)
-            .clickable(onClick = { onCallBack(call.name) }),
-        leading = {
-            com.popchat.ui.common.Avatar(
-                imageUrl = call.avatarUrl,
-                name = call.name,
-                size = 56
+            .glassPanel(
+                shape = MaterialTheme.shapes.medium,
+                level = GlassLevel.Regular,
             )
-        },
-        headlineContent = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            .clickable { onCallBack(call.name) }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Avatar(
+            imageUrl = call.avatarUrl,
+            name = call.name,
+            size = 56
+        )
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Text(
+                    text = call.name,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.onSurface,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Text(
+                    text = time,
+                    fontSize = 12.sp,
+                    color = colors.onSurfaceVariant
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CallTypeIcon(call.type)
+                Text(
+                    text = call.type.displayLabel,
+                    fontSize = 12.sp,
+                    color = colors.onSurfaceVariant
+                )
+                call.duration?.let { duration ->
                     Text(
-                        text = call.name,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = time,
+                        text = duration,
                         fontSize = 12.sp,
                         color = colors.onSurfaceVariant
                     )
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    when (call.type) {
-                        CallType.INCOMING -> Icon(Icons.Default.CallReceived, contentDescription = "Incoming", tint = OmiChatGreen, modifier = Modifier.size(16.dp))
-                        CallType.OUTGOING -> Icon(Icons.Default.CallMade, contentDescription = "Outgoing", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
-                        CallType.MISSED -> Icon(Icons.Default.CallMissed, contentDescription = "Missed", tint = colors.error, modifier = Modifier.size(16.dp))
-                        CallType.VIDEO_INCOMING, CallType.VIDEO_OUTGOING -> {
-                            Icon(Icons.Default.Videocam, contentDescription = "Video", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
-                            Text(call.type.name.replace("_", " "), fontSize = 12.sp, color = colors.onSurfaceVariant)
-                        }
-                    }
-                    call.duration?.let { dur ->
-                        Text(text = dur, fontSize = 12.sp, color = colors.onSurfaceVariant)
-                    }
-                }
             }
-        },
-        trailing = {
-            Icon(
-                imageVector = Icons.Default.Call,
-                contentDescription = "Call back",
-                tint = OmiChatBlue,
-                modifier = Modifier.padding(start = 8.dp).size(24.dp)
-            )
         }
+
+        Icon(
+            imageVector = Icons.Default.Call,
+            contentDescription = "Call back",
+            tint = OmiChatBlue,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun CallTypeIcon(type: CallType) {
+    val colors = MaterialTheme.colorScheme
+    val (icon, tint, description) = when (type) {
+        CallType.INCOMING -> Triple(Icons.Default.CallReceived, OmiChatGreen, "Incoming")
+        CallType.OUTGOING -> Triple(Icons.Default.CallMade, OmiChatBlue, "Outgoing")
+        CallType.MISSED -> Triple(Icons.Default.CallMissed, colors.error, "Missed")
+        CallType.VIDEO_INCOMING,
+        CallType.VIDEO_OUTGOING -> Triple(Icons.Default.Videocam, OmiChatBlue, "Video")
+    }
+
+    Icon(
+        imageVector = icon,
+        contentDescription = description,
+        tint = tint,
+        modifier = Modifier.size(16.dp)
     )
 }
 
-private fun formatTime(instant: kotlinx.datetime.Instant): String {
-    val now = kotlinx.datetime.Instant.now()
-    val diff = now.epochMilliseconds - instant.epochMilliseconds
-    val minutes = diff / (1000 * 60)
-    val hours = minutes / 60
-    val days = hours / 24
+private val CallType.displayLabel: String
+    get() = when (this) {
+        CallType.INCOMING -> "Incoming"
+        CallType.OUTGOING -> "Outgoing"
+        CallType.MISSED -> "Missed"
+        CallType.VIDEO_INCOMING -> "Incoming video"
+        CallType.VIDEO_OUTGOING -> "Outgoing video"
+    }
+
+/** Compact relative time, falling back to a calendar date past a week. */
+private fun formatTime(instant: Instant): String {
+    val elapsed = Clock.System.now() - instant
+
+    val minutes = elapsed.inWholeMinutes
+    val hours = elapsed.inWholeHours
+    val days = elapsed.inWholeDays
 
     return when {
         minutes < 1 -> "now"
         minutes < 60 -> "${minutes}m"
         hours < 24 -> "${hours}h"
         days < 7 -> "${days}d"
-        else -> kotlinx.datetime.format.DateTimeFormatter.ISO_LOCAL_DATE.format(instant)
+        else -> instant
+            // LocalDate.toString() is already ISO-8601 (yyyy-MM-dd), which is
+            // what this wants; reaching for a DateTimeFormat object here would
+            // mean formatting a LocalDateTime just to drop the time part.
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+            .toString()
     }
 }

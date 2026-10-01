@@ -42,7 +42,9 @@ import com.popchat.ui.common.MessageType
 import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatGreen
 import com.popchat.ui.theme.glassPanel
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ChatScreen(
@@ -188,7 +190,7 @@ data class ChatMessage(
     val type: String,
     val isCurrentUser: Boolean,
     val senderName: String,
-    val timestamp: Instant = Instant.now(),
+    val timestamp: Instant = Clock.System.now(),
     val mediaUrl: String? = null,
     val isRead: Boolean = true,
 )
@@ -200,7 +202,7 @@ val sampleMessages = listOf(
         type = MessageType.TEXT,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = Instant.now().minusSeconds(3600),
+        timestamp = Clock.System.now() - 3600.seconds,
     ),
     ChatMessage(
         id = "2",
@@ -208,7 +210,7 @@ val sampleMessages = listOf(
         type = MessageType.TEXT,
         isCurrentUser = true,
         senderName = "You",
-        timestamp = Instant.now().minusSeconds(3500),
+        timestamp = Clock.System.now() - 3500.seconds,
     ),
     ChatMessage(
         id = "3",
@@ -216,7 +218,7 @@ val sampleMessages = listOf(
         type = MessageType.TEXT,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = Instant.now().minusSeconds(3400),
+        timestamp = Clock.System.now() - 3400.seconds,
     ),
     ChatMessage(
         id = "4",
@@ -224,7 +226,7 @@ val sampleMessages = listOf(
         type = MessageType.TEXT,
         isCurrentUser = true,
         senderName = "You",
-        timestamp = Instant.now().minusSeconds(3300),
+        timestamp = Clock.System.now() - 3300.seconds,
     ),
     ChatMessage(
         id = "5",
@@ -232,7 +234,7 @@ val sampleMessages = listOf(
         type = MessageType.IMAGE,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = Instant.now().minusSeconds(3200),
+        timestamp = Clock.System.now() - 3200.seconds,
         mediaUrl = "https://picsum.photos/400/300",
     ),
     ChatMessage(
@@ -241,7 +243,7 @@ val sampleMessages = listOf(
         type = MessageType.TEXT,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = Instant.now().minusSeconds(3100),
+        timestamp = Clock.System.now() - 3100.seconds,
     ),
     ChatMessage(
         id = "7",
@@ -249,6 +251,6 @@ val sampleMessages = listOf(
         type = MessageType.TEXT,
         isCurrentUser = true,
         senderName = "You",
-        timestamp = Instant.now().minusSeconds(3000),
+        timestamp = Clock.System.now() - 3000.seconds,
     ),
 )

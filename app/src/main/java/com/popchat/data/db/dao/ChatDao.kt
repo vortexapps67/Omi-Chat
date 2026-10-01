@@ -26,16 +26,21 @@ interface ChatDao {
     @Query("SELECT * FROM chats WHERE id = :chatId")
     suspend fun getChatSync(chatId: String): ChatEntity?
 
-    @Query("SELECT * FROM chats WHERE isArchived = 0 ORDER BY isPinned DESC, lastMessageAt DESC NULLS LAST")
+    // Room 2.6's bundled SQLite parser does not accept the SQL NULLS FIRST/LAST
+    // modifiers, so descending sorts with nulls last are expressed as a leading
+    // `(column IS NULL)` sort key: it yields 0 for present values and 1 for nulls,
+    // so ascending puts real timestamps first, then lastMessageAt DESC orders them.
+
+    @Query("SELECT * FROM chats WHERE isArchived = 0 ORDER BY isPinned DESC, (lastMessageAt IS NULL), lastMessageAt DESC")
     fun getAllChats(): Flow<List<ChatEntity>>
 
-    @Query("SELECT * FROM chats WHERE isArchived = 0 AND isGroup = 0 ORDER BY lastMessageAt DESC NULLS LAST")
+    @Query("SELECT * FROM chats WHERE isArchived = 0 AND isGroup = 0 ORDER BY (lastMessageAt IS NULL), lastMessageAt DESC")
     fun getDirectChats(): Flow<List<ChatEntity>>
 
-    @Query("SELECT * FROM chats WHERE isArchived = 0 AND isGroup = 1 ORDER BY lastMessageAt DESC NULLS LAST")
+    @Query("SELECT * FROM chats WHERE isArchived = 0 AND isGroup = 1 ORDER BY (lastMessageAt IS NULL), lastMessageAt DESC")
     fun getGroupChats(): Flow<List<ChatEntity>>
 
-    @Query("SELECT * FROM chats WHERE isPinned = 1 AND isArchived = 0 ORDER BY lastMessageAt DESC NULLS LAST")
+    @Query("SELECT * FROM chats WHERE isPinned = 1 AND isArchived = 0 ORDER BY (lastMessageAt IS NULL), lastMessageAt DESC")
     fun getPinnedChats(): Flow<List<ChatEntity>>
 
     @Query("SELECT * FROM chats WHERE id IN (:chatIds)")
@@ -43,6 +48,21 @@ interface ChatDao {
 
     @Query("SELECT * FROM chats WHERE name LIKE :query OR lastMessagePreview LIKE :query LIMIT 20")
     suspend fun searchChats(query: String): List<ChatEntity>
+
+    // A 1-on-1 chat has no name of its own, so the only way to recognise one is
+    // by its roster: the two self-joins match a direct chat whose participants
+    // are exactly these two users. Passing the same id twice cannot match,
+    // which is why callers still guard against self-chat explicitly.
+    @Query(
+        """
+        SELECT c.* FROM chats AS c
+        INNER JOIN chat_participants AS a ON a.chatId = c.id AND a.userId = :firstUserId
+        INNER JOIN chat_participants AS b ON b.chatId = c.id AND b.userId = :secondUserId
+        WHERE c.isGroup = 0
+        LIMIT 1
+        """
+    )
+    suspend fun findDirectChat(firstUserId: String, secondUserId: String): ChatEntity?
 
     @Query("UPDATE chats SET unreadCount = unreadCount + 1 WHERE id = :chatId")
     suspend fun incrementUnreadCount(chatId: String)

@@ -13,7 +13,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,14 +24,17 @@ class ChatDetailViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
+    // StateFlow already de-duplicates by equality, so these are published as-is.
+    // distinctUntilChanged() on a StateFlow is deprecated for exactly that
+    // reason and does nothing.
     private val _messages = MutableStateFlow<List<MessageEntity>>(emptyList())
-    val messages = _messages.asStateFlow().distinctUntilChanged()
+    val messages = _messages.asStateFlow()
 
     private val _chat = MutableStateFlow<com.popchat.data.model.ChatEntity?>(null)
-    val chat = _chat.asStateFlow().distinctUntilChanged()
+    val chat = _chat.asStateFlow()
 
     private val _otherUser = MutableStateFlow<UserEntity?>(null)
-    val otherUser = _otherUser.asStateFlow().distinctUntilChanged()
+    val otherUser = _otherUser.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -44,30 +47,31 @@ class ChatDetailViewModel @Inject constructor(
     private val messageChannel = Channel<MessageEntity>(Channel.UNLIMITED)
 
     init {
-        observeMessages()
         observeRealtimeMessages()
     }
 
     fun initialize(chatId: String) {
         currentChatId = chatId
-        currentUserId = userRepository.getCurrentUser()?.id
-        loadChat(chatId)
-        loadMessages(chatId)
-        markAsRead(chatId)
+        viewModelScope.launch {
+            currentUserId = userRepository.getCurrentUser()?.id
+            loadChat(chatId)
+            loadMessages(chatId)
+            markAsRead(chatId)
+        }
     }
 
-    private fun loadChat(chatId: String) {
-        viewModelScope.launch {
-            val chatEntity = chatRepository.getChat(chatId)
-            _chat.value = chatEntity
+    private suspend fun loadChat(chatId: String) {
+        val chatEntity = chatRepository.getChat(chatId)
+        _chat.value = chatEntity
 
-            if (!chatEntity?.isGroup == true) {
-                // Load other user for direct chat
-                val participantIds = chatRepository.observeChatWithParticipants(chatId).first().participants.map { it.id }
-                val otherId = participantIds.firstOrNull { it != currentUserId }
-                otherId?.let {
-                    userRepository.observeUser(it).first().let { _otherUser.value = it }
-                }
+        // A group chat has no single counterpart to show in the header.
+        if (chatEntity?.isGroup != true) {
+            val participants = chatRepository.observeChatWithParticipants(chatId).first().participants
+            // observeUser takes an id, so the participant entity is unwrapped
+            // here rather than passed through.
+            val otherId = participants.firstOrNull { it.id != currentUserId }?.id
+            if (otherId != null) {
+                _otherUser.value = userRepository.observeUser(otherId).first()
             }
         }
     }
@@ -83,12 +87,10 @@ class ChatDetailViewModel @Inject constructor(
         }
     }
 
-    private fun observeMessages() {
-        // Messages are observed via loadMessages
-    }
-
     private fun observeRealtimeMessages() {
-        // TODO: Subscribe to Supabase Realtime for new messages
+        // TODO: Subscribe to Supabase Realtime for new messages. Until then the
+        // Room flow above is the only source, so a message sent on another
+        // device appears only when the screen is re-created.
     }
 
     suspend fun sendMessage(content: String, type: String = MessageEntity.TYPE_TEXT) {
@@ -107,14 +109,14 @@ class ChatDetailViewModel @Inject constructor(
             replyToId = null,
             isEdited = false,
             isDeleted = false,
-            createdAt = kotlinx.datetime.Instant.now(),
-            updatedAt = kotlinx.datetime.Instant.now(),
+            createdAt = kotlinx.datetime.Clock.System.now(),
+            updatedAt = kotlinx.datetime.Clock.System.now(),
             deliveredAt = null,
             readAt = null
         )
 
         messageRepository.sendMessage(message)
-        chatRepository.updateLastMessage(chatId, message.id, content, message.createdAt.epochMilliseconds)
+        chatRepository.updateLastMessage(chatId, message.id, content, message.createdAt.toEpochMilliseconds())
     }
 
     suspend fun sendMediaMessage(mediaUrl: String, mediaType: String, mediaSize: Long) {
@@ -140,14 +142,14 @@ class ChatDetailViewModel @Inject constructor(
             replyToId = null,
             isEdited = false,
             isDeleted = false,
-            createdAt = kotlinx.datetime.Instant.now(),
-            updatedAt = kotlinx.datetime.Instant.now(),
+            createdAt = kotlinx.datetime.Clock.System.now(),
+            updatedAt = kotlinx.datetime.Clock.System.now(),
             deliveredAt = null,
             readAt = null
         )
 
         messageRepository.sendMessage(message)
-        chatRepository.updateLastMessage(chatId, message.id, "[${type}]", message.createdAt.epochMilliseconds)
+        chatRepository.updateLastMessage(chatId, message.id, "[${type}]", message.createdAt.toEpochMilliseconds())
     }
 
     suspend fun editMessage(messageId: String, newContent: String) {
@@ -168,7 +170,7 @@ class ChatDetailViewModel @Inject constructor(
         val chatId = currentChatId ?: return
         val oldestMessage = _messages.value.firstOrNull()
         oldestMessage?.let {
-            val moreMessages = messageRepository.loadMoreMessages(chatId, it.createdAt.epochMilliseconds, 50)
+            val moreMessages = messageRepository.loadMoreMessages(chatId, it.createdAt.toEpochMilliseconds(), 50)
             _messages.value = moreMessages.reversed() + _messages.value
         }
     }

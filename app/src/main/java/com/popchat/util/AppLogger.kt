@@ -2,6 +2,7 @@ package com.popchat.util
 
 import android.content.Context
 import android.util.Log
+import com.popchat.BuildConfig
 import timber.log.Timber
 
 object AppLogger {

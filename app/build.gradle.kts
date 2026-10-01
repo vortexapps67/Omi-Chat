@@ -107,19 +107,34 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        // Kotlin 2.0 renamed -Xopt-in to -opt-in; the old spelling still works
+        // but is deprecated and warns on every compile.
         freeCompilerArgs += listOf(
-            "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-Xopt-in=androidx.lifecycle.ExperimentalLifecycleApi",
-            "-Xopt-in=androidx.compose.runtime.ExperimentalComposeApi"
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.runtime.ExperimentalComposeApi",
+            // TopAppBar and the other M3 app-bar surfaces are still marked
+            // experimental on the Material3 1.2.1 line this app compiles
+            // against. Opting in project-wide is deliberate: every screen that
+            // uses one would otherwise need its own @OptIn annotation, which
+            // says nothing about whether the app handles the API correctly.
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            // HorizontalPager, used by the onboarding carousel.
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            // Blurred glass edges (Modifier.blur with a BlurredEdgeTreatment).
+            "-opt-in=androidx.compose.ui.graphics.ExperimentalGraphicsApi"
         )
     }
 
     buildFeatures {
         compose = true
-        viewBinding = true
-        dataBinding = true
+        // Required because defaultConfig declares custom buildConfigField values
+        // (the Supabase keys); the feature is off by default since AGP 8.
+        buildConfig = true
     }
+    // viewBinding and dataBinding are intentionally off: the app is Compose
+    // only and has no res/layout directory, so both compiler passes would be
+    // pure overhead.
 
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
@@ -140,6 +155,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    // collectAsStateWithLifecycle()
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.livedata.ktx)
 
@@ -156,12 +173,17 @@ dependencies {
     implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.pager)
+    // HorizontalPager/rememberPagerState come from androidx.compose.foundation:
+    // foundation on the Compose 1.6.x line; there is no standalone pager
+    // artifact to declare.
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
 
     // Hilt DI
+    // The Gradle plugin fails configuration outright if hilt-android itself is
+    // absent, so the runtime is required alongside the compiler.
+    implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.androidx.hilt.compiler)
 
@@ -184,9 +206,8 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation(libs.moshi.adapters)
 
-    // Image Loading
+    // Image Loading. Coil 2.x includes its OkHttp fetcher in the core artifact.
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
 
     // Supabase
     implementation(libs.supabase.kt)
@@ -205,6 +226,7 @@ dependencies {
 
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
 
     // CameraX
     implementation(libs.androidx.camera.core)
@@ -243,13 +265,8 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        freeCompilerArgs += listOf(
-            "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-Xopt-in=androidx.lifecycle.ExperimentalLifecycleApi",
-            "-Xopt-in=androidx.compose.runtime.ExperimentalComposeApi"
-        )
-    }
-}
+// Compiler opt-ins live in the android { kotlinOptions { } } block above. This
+// used to be duplicated as a top-level tasks.withType<KotlinCompile> block,
+// which could not compile: KotlinCompile is not resolvable from a build script
+// classpath without an explicit import, and the `kotlinOptions` extension it
+// would call is scoped to the Android extension, not to the task.

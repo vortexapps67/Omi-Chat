@@ -29,6 +29,11 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE isCurrentUser = 1 LIMIT 1")
     fun getCurrentUser(): Flow<UserEntity?>
 
+    // Suspending twin of getCurrentUser(), for one-shot reads such as
+    // clearing the current-user flag before switching accounts.
+    @Query("SELECT * FROM users WHERE isCurrentUser = 1 LIMIT 1")
+    suspend fun getCurrentUserSync(): UserEntity?
+
     @Query("SELECT * FROM users WHERE id IN (:userIds)")
     fun getUsers(userIds: List<String>): Flow<List<UserEntity>>
 

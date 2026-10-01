@@ -39,9 +39,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.Dp
@@ -388,21 +390,24 @@ fun GlassBackdrop(
  * Below Android 12 there is no `RenderEffect`, so this degrades to a no-op and
  * the panes lean on a heavier tint instead (see [GlassTokens.tintAlphaScale]).
  */
-fun Modifier.frosted(radius: Dp, shape: Shape = RectangleShape): Modifier = this
-    .clip(shape)
-    .then(
-        if (radius > 0.dp && canBlurBackdrop) {
-            Modifier.graphicsLayer {
-                renderEffect = RenderEffect.createBlurEffect(
-                    radiusX = radius.toPx(),
-                    radiusY = radius.toPx(),
-                    tileMode = android.graphics.Shader.TileMode.CLAMP,
-                )
-            }
-        } else {
-            Modifier
-        }
-    )
+fun Modifier.frosted(radius: Dp, shape: Shape = RectangleShape): Modifier {
+    val clipped = this.clip(shape)
+    if (radius <= 0.dp) return clipped
+    // Blur needs the platform RenderEffect, which arrived in API 31. The
+    // comparison is written out literally rather than reusing
+    // [canBlurBackdrop] because lint can only follow a direct SDK_INT check.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return clipped
+    return clipped.graphicsLayer {
+        // radius.toPx() resolves against GraphicsLayerScope, which is a Density.
+        renderEffect = android.graphics.RenderEffect.createBlurEffect(
+            // Positional, not named: the Android SDK stubs name these
+            // parameters p0/p1/p2, so named arguments do not resolve.
+            radius.toPx(),
+            radius.toPx(),
+            android.graphics.Shader.TileMode.CLAMP,
+        ).asComposeRenderEffect()
+    }
+}
 
 /* ------------------------------------------------------------------------- */
 /*                                 Components                                 */

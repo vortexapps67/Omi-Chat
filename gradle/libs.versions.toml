@@ -1,17 +1,28 @@
 [versions]
 androidGradlePlugin = "8.5.0"
 kotlin = "2.0.0"
-compileSdk = 34
-minSdk = 26
-targetSdk = 34
+# Quoted: a bare TOML integer parses as a Long, and the version catalog
+# rejects Long where a version String is expected.
+compileSdk = "34"
+minSdk = "26"
+targetSdk = "34"
 coreKtx = "1.13.1"
 activityCompose = "1.9.0"
 lifecycle = "2.8.2"
 room = "2.6.1"
+# Dagger Hilt's own version.
 hilt = "2.48"
+# androidx.hilt is versioned independently of Dagger Hilt. It was previously
+# pinned to the Hilt version (2.48), which does not exist for this artifact.
+androidxHilt = "1.2.0"
+# Must match the Kotlin version: KSP ships as <kotlin>-<ksp>. The previously
+# pinned 2.0.0-1.0.13 does not exist for Kotlin 2.0.0 and fails plugin
+# resolution at configuration time.
+ksp = "2.0.0-1.0.21"
 composeBom = "2024.06.00"
 material3 = "1.2.1"
-materialIcons = "1.2.1"
+# materialIcons / materialIconsExtended version keys are gone: the Compose BOM
+# owns those artifacts, and pinning them here shadowed it.
 composeCompiler = "1.5.13"
 coroutines = "1.8.0"
 serialization = "1.6.3"
@@ -19,6 +30,9 @@ okhttp = "4.12.0"
 retrofit = "2.11.0"
 moshi = "1.15.1"
 coil = "2.6.0"
+# supabase-kt 1.x and 2.x both use the package io.github.jan.supabase. The
+# auth module is still called gotrue-kt here; it was only renamed to auth-kt in
+# 3.0.0, along with a broader API break.
 supabase = "2.0.0"
 paging = "3.2.1"
 navigation = "2.7.7"
@@ -35,7 +49,6 @@ composeUiTest = "1.5.4"
 mockk = "1.13.13"
 turbine = "1.0.0"
 pager = "1.2.0"
-materialIconsExtended = "1.2.1"
 kotlinxDatetime = "0.6.1"
 timber = "5.0.1"
 
@@ -45,11 +58,19 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+# Supplies androidx.lifecycle.compose.collectAsStateWithLifecycle, which the
+# screens use so flows stop collecting when the Activity is stopped. It is a
+# separate artifact from lifecycle-runtime-ktx.
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHilt" }
+# Provides androidx.hilt.work.HiltWorkerFactory, injected in OmiChatApplication
+# to give WorkManager a Hilt-aware factory.
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "androidxHilt" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 androidx-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 google-services = { group = "com.google.gms", name = "google-services", version = "4.4.2" }
 
@@ -61,12 +82,17 @@ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graph
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
-androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
+# Versions are left to the Compose BOM. Pinning them separately (to 1.2.1, an
+# artifact from the Compose 1.2 era) silently downgrades the icon set, so icons
+# added after that release - PlayCircleFill, for one - stop resolving.
+androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
-androidx-compose-pager = { group = "androidx.compose.foundation", name = "pager", version.ref = "pager" }
+# No separate pager artifact: androidx.compose.foundation:pager only exists from
+# 1.7.0-alpha. On the Compose 1.6.8 line shipped by the BOM, HorizontalPager
+# lives in androidx.compose.foundation:foundation, which is already a dependency.
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
@@ -87,15 +113,15 @@ moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
 moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
 moshi-adapters = { group = "com.squareup.moshi", name = "moshi-adapters", version.ref = "moshi" }
 
-# Image loading
+# Image loading. Coil 2.x bundles its OkHttp fetcher inside io.coil-kt:coil, so
+# there is no separate coil-network-okhttp artifact to add.
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-coil-network-okhttp = { group = "io.coil-kt", name = "coil-network-okhttp", version.ref = "coil" }
 
 # Supabase
 supabase-kt = { group = "io.github.jan-tennert.supabase", name = "supabase-kt", version.ref = "supabase" }
 supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
 supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt", version.ref = "supabase" }
-supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
+supabase-auth = { group = "io.github.jan-tennert.supabase", name = "gotrue-kt", version.ref = "supabase" }
 supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
 
 # Paging
@@ -139,5 +165,5 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version = "2.0.0-1.0.13" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

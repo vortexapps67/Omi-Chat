@@ -3,6 +3,7 @@ package com.popchat.data.repository.impl
 import com.popchat.data.db.AppDatabase
 import com.popchat.data.model.MessageEntity
 import com.popchat.data.repository.MessageRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton

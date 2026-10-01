@@ -23,11 +23,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.PlayCircleFill
+import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -183,7 +185,7 @@ fun MessageBubble(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.PlayCircleFill,
+                                imageVector = Icons.Default.PlayCircleFilled,
                                 contentDescription = "Play video",
                                 tint = Color.White.copy(alpha = 0.9f),
                                 modifier = Modifier.size(48.dp),
@@ -196,7 +198,7 @@ fun MessageBubble(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Icon(
-                            imageVector = Icons.Default.PlayCircleFill,
+                            imageVector = Icons.Default.PlayCircleFilled,
                             contentDescription = "Play voice message",
                             tint = contentColor,
                             modifier = Modifier.size(28.dp),

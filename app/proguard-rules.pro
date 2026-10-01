@@ -1,74 +1,58 @@
-# ProGuard Rules for PopChat
+# R8 / ProGuard rules for the release build.
+#
+# Most of what this app uses ships its own consumer rules, so this file is
+# deliberately short. An earlier version of it kept entire library packages -
+# androidx.compose.**, kotlinx.coroutines.**, okhttp3.** and so on - which
+# silently disables shrinking for everything Compose-related and inflates the
+# release APK. Compose, Room, Hilt, Coil, OkHttp, Retrofit, Moshi, Timber and
+# kotlinx-serialization all declare their own requirements, and the Kotlin
+# serialization compiler plugin is applied, so R8 already knows how to keep
+# serializable classes.
 
-# Keep Hilt generated classes
--keep class dagger.hilt.** { *; }
--keep class * extends dagger.hilt.android.HiltAndroidApp { *; }
--keep class * extends dagger.hilt.android.HiltApplication { *; }
+# --- Optional bindings that are legitimately absent -------------------------
+#
+# supabase-kt depends on slf4j-api, whose LoggerFactory looks up a backend
+# binding (org.slf4j.impl.StaticLoggerBinder) that Android apps never ship -
+# SLF4J falls back to a no-op logger there. R8 reports the unresolved lookup as
+# a missing class and fails the build; the classes genuinely are not needed.
+-dontwarn org.slf4j.impl.**
+-dontwarn org.slf4j.**
 
-# Keep Room entities and DAOs
+# --- App code ---------------------------------------------------------------
+
+# Room entities and the @Serializable wire models travel between Room, the
+# Supabase client and the UI. Keeping this (small) package costs little and
+# avoids the class of failure where a field is renamed in release but not in
+# debug, because nothing in the debug build went through a serializer.
 -keep class com.popchat.data.model.** { *; }
--keep class com.popchat.data.db.dao.** { *; }
--keep class com.popchat.data.db.AppDatabase { *; }
-
-# Keep Supabase models
 -keep class com.popchat.data.supabase.model.** { *; }
 
-# Keep ViewModels
--keep class com.popchat.ui.**.*ViewModel { *; }
+# Room instantiates Migration and DatabaseCallback subclasses reflectively.
+-keep class * extends androidx.room.migration.Migration { *; }
+-keep class * extends androidx.room.RoomDatabase.Callback { *; }
 
-# Keep Compose related
--keep class androidx.compose.** { *; }
--keep class androidx.activity.compose.** { *; }
--keep class androidx.lifecycle.viewmodel.compose.** { *; }
-
-# Keep Navigation
--keep class androidx.navigation.** { *; }
-
-# Keep Coil
--keep class io.coil.** { *; }
-
-# Keep Kotlinx serialization
--keep class kotlinx.serialization.** { *; }
--keep class kotlinx.coroutines.** { *; }
-
-# Keep OkHttp and Retrofit
--keep class okhttp3.** { *; }
--keep class retrofit2.** { *; }
-
-# Keep Moshi
--keep class com.squareup.moshi.** { *; }
-
-# Keep Firebase
--keep class com.google.firebase.** { *; }
-
-# Keep Supabase
--keep class io.github.jan_tennert.supabase.** { *; }
-
-# Keep Timber
--keep class timber.log.** { *; }
-
-# Keep generated Hilt components
--keep class * extends dagger.hilt.android.HiltApplication { *; }
-
-# Keep Parcelable implementations
--keep class * implements android.os.Parcelable { *; }
-
-# Keep Enum values
+# Enum values()/valueOf() are used by Room type converters and by anything that
+# round-trips an enum through a name string.
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
-# Keep annotations
--keepattributes *Annotation*
--keepattributes Signature
--keepattributes EnclosingMethod
+# kotlinx.serialization resolves serializers through generated Companion
+# objects, and needs the annotation metadata and generic signatures intact.
+-keepattributes *Annotation*, InnerClasses, Signature, EnclosingMethod
+-keepclassmembers class com.popchat.data.supabase.model.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.popchat.data.supabase.model.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
-# Keep JSR 305 annotations
+# Line numbers and the source file name are kept so release stack traces from
+# Play Console and any crash reporter stay readable.
+-keepattributes SourceFile, LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# --- Annotations that are only present for tooling --------------------------
 -dontwarn javax.annotation.**
-
-# Keep Room migration paths
--keep class * extends androidx.room.migration.Migration { *; }
-
-# Keep KSP generated classes
--keep class com.popchat.hilt.** { *; }
+-dontwarn jakarta.annotation.**

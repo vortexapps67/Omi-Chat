@@ -35,6 +35,14 @@ interface ChatRepository {
 
     suspend fun searchChats(query: String): List<ChatEntity>
 
+    /**
+     * Existing 1-on-1 chat between the two users, or null if there is none.
+     *
+     * Callers use this before creating a chat so that tapping the same person
+     * twice reopens the existing conversation instead of starting a second one.
+     */
+    suspend fun findDirectChat(firstUserId: String, secondUserId: String): ChatEntity?
+
     suspend fun syncChatsFromSupabase()
 
     fun observeChatWithParticipants(chatId: String): Flow<ChatWithParticipants>

@@ -29,9 +29,17 @@ sealed class Result<out T> {
         is Failure -> this
     }
 
-    fun getOrElse(default: T): T = when (this) {
+    /**
+     * Returns the value, or [default] if this is a failure.
+     *
+     * The fallback is a lambda so the default is not built on the success path.
+     * It still lands T in an `in` position because parameters are consumed, so
+     * it needs @UnsafeVariance; the lambda only *produces* a T and never reads
+     * one back out, which is what makes that safe here.
+     */
+    fun getOrElse(default: () -> @UnsafeVariance T): T = when (this) {
         is Success -> value
-        is Failure -> default
+        is Failure -> default()
     }
 
     fun getOrThrow(): T = when (this) {
