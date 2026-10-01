@@ -133,16 +133,36 @@ fun OmiChatApp() {
                 LoginScreen(
                     onLoginClick = { _, _ -> },
                     onForgotPassword = { /* Route to the reset-password flow */ },
-                    onGoogleSignIn = { /* Start the Supabase OAuth session */ },
+                    onGoogleSignIn = {
+                        navController.navigate("main") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                    },
                     onSignUpClick = { navController.navigate("register") },
+                    onSuccess = {
+                        navController.navigate("main") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                    },
+                    onBack = { navController.popBackStack() },
                 )
             }
 
             composable("register") {
                 RegisterScreen(
                     onRegisterClick = { _, _, _ -> },
-                    onGoogleSignIn = { /* Start the Supabase OAuth session */ },
+                    onGoogleSignIn = {
+                        navController.navigate("main") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                    },
                     onLoginClick = { navController.popBackStack() },
+                    onSuccess = {
+                        navController.navigate("main") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                    },
+                    onBack = { navController.popBackStack() },
                 )
             }
 

@@ -41,8 +41,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.popchat.ui.common.BackButton
 import com.popchat.ui.common.OutlinedInputField
 import com.popchat.ui.common.OutlinedPillButton
@@ -62,11 +62,13 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun LoginScreen(
-    onLoginClick: (String, String) -> Unit,
-    onForgotPassword: () -> Unit,
-    onGoogleSignIn: () -> Unit,
-    onSignUpClick: () -> Unit,
+    onLoginClick: (String, String) -> Unit = { _, _ -> },
+    onForgotPassword: () -> Unit = {},
+    onGoogleSignIn: () -> Unit = {},
+    onSignUpClick: () -> Unit = {},
+    onSuccess: () -> Unit = {},
     onBack: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -74,7 +76,6 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    val viewModel: AuthViewModel = viewModel()
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -156,10 +157,15 @@ fun LoginScreen(
                         isLoading = true
                         scope.launch {
                             viewModel.signIn(email.trim(), password)
-                                .onFailure { isLoading = false; error = it.message }
+                                .onSuccess {
+                                    isLoading = false
+                                    onSuccess()
+                                }
+                                .onFailure {
+                                    isLoading = false
+                                    error = it.message
+                                }
                         }
-                        // `onLoginClick` lets the host observe the attempt; the
-                        // ViewModel owns whether the session actually succeeded.
                         onLoginClick(email.trim(), password)
                     },
                 )
@@ -193,10 +199,12 @@ fun LoginScreen(
 /** Create account. Shares the glass card layout with [LoginScreen]. */
 @Composable
 fun RegisterScreen(
-    onRegisterClick: (String, String, String) -> Unit,
-    onGoogleSignIn: () -> Unit,
-    onLoginClick: () -> Unit,
+    onRegisterClick: (String, String, String) -> Unit = { _, _, _ -> },
+    onGoogleSignIn: () -> Unit = {},
+    onLoginClick: () -> Unit = {},
+    onSuccess: () -> Unit = {},
     onBack: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -205,7 +213,6 @@ fun RegisterScreen(
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    val viewModel: AuthViewModel = viewModel()
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -284,8 +291,16 @@ fun RegisterScreen(
                     onClick = {
                         isLoading = true
                         scope.launch {
-                            viewModel.signUp(email.trim(), password, username = fullName.trim(), displayName = fullName.trim())
-                                .onFailure { isLoading = false; error = it.message }
+                            val username = email.substringBefore("@").ifBlank { "user" }
+                            viewModel.signUp(email.trim(), password, username = username, displayName = fullName.trim())
+                                .onSuccess {
+                                    isLoading = false
+                                    onSuccess()
+                                }
+                                .onFailure {
+                                    isLoading = false
+                                    error = it.message
+                                }
                         }
                         onRegisterClick(fullName.trim(), email.trim(), password)
                     },
@@ -328,8 +343,8 @@ fun AuthScreen(
     onNavigateToMain: () -> Unit,
     onGoogleSignIn: () -> Unit = {},
     onBack: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
-    val viewModel: AuthViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     when (val state = uiState) {
@@ -350,7 +365,9 @@ fun AuthScreen(
             onForgotPassword = { },
             onGoogleSignIn = onGoogleSignIn,
             onSignUpClick = { },
+            onSuccess = onNavigateToMain,
             onBack = onBack,
+            viewModel = viewModel,
         )
     }
 }
