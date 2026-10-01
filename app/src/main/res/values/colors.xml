@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OmiChat Brand Colors -->
+    <color name="omichat_blue">#1E88E5</color>
+    <color name="omichat_blue_light">#64B5F6</color>
+    <color name="omichat_blue_dark">#1565C0</color>
+    <color name="omichat_blue_container">#E3F2FD</color>
+    <color name="omichat_green">#4CAF50</color>
+    <color name="omichat_yellow">#FFC107</color>
+    <color name="omichat_orange">#FF9800</color>
+    <color name="omichat_red">#EF4444</color>
+
+    <!-- Neutrals -->
+    <color name="white">#FFFFFF</color>
+    <color name="off_white">#FAFAFA</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="medium_gray">#E0E0E0</color>
+    <color name="dark_gray">#757575</color>
+    <color name="charcoal">#212121</color>
+    <color name="black">#000000</color>
+
+    <!-- Status bar -->
+    <color name="status_bar_color">@color/omichat_blue</color>
+    <color name="navigation_bar_color">@color/white</color>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Omi Chat is a Compose-only app, so there is no Material Components (XML)
+      dependency to supply Theme.Material3.*. The activity theme only needs to
+      hand Compose a window: no action bar, and platform bars configured for the
+      edge-to-edge layout the Compose UI draws itself.
+
+      The parent is the platform light theme. values-night/themes.xml overrides
+      it with the platform dark theme.
+    -->
+    <style name="Theme.OmiChat" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/omichat_blue</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <!-- Blue status bar, so the icons stay light. -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <style name="Theme.OmiChat.Transparent" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="Theme.OmiChat.Splash" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/omichat_blue</item>
+        <item name="android:navigationBarColor">@color/omichat_blue</item>
+    </style>
+</resources>

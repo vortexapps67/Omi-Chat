@@ -10,14 +10,15 @@
 *.class
 
 # Generated files
-bin/
-gen/
-out/
+# Deliberately NOT anchored: every Gradle module has its own build directory
+# (app/build, build-logic/build), so a /build/ rule would only cover the root.
+/bin/
+/gen/
+/out/
 build/
 
 # Gradle files
 .gradle/
-build/
 local.properties
 local.properties.template
 
@@ -56,8 +57,11 @@ Thumbs.db
 *.log
 
 # Test reports
-reports/
-test-results/
+/reports/
+/test-results/
+
+# NOTE: source files are matched by directory, not by extension, so a source
+# file added later is never silently hidden.
 
 # Firebase
 google-services.json
@@ -66,8 +70,10 @@ google-services.json.template
 # Supabase
 supabase.properties
 
-# Release
-release/
+# Release packaging output (dist/, dist-sources/). Anchored because
+# app/build/outputs/apk/release/ is already covered by build/ above, and an
+# unanchored release/ would also hide a source directory of that name.
+/release/
 
 # External native build
 .externalNativeBuild/
@@ -77,15 +83,23 @@ release/
 captures/
 
 # Coverage reports
+# Named after the tools that actually emit them. A blanket *.xml / *.html is
+# wrong here: those are extensionless-format-agnostic patterns that match every
+# XML file in the project, which silently excluded AndroidManifest.xml and all
+# of app/src/main/res from the repository and broke the build on CI, where the
+# resources simply were not there.
 *.ec
-coverage/
-*.html
-*.xml
-
-# Jetpack Compose
-compose/
+*.lcov
+/coverage/
+jacoco.xml
+jacoco.html
+junit.xml
+junit.html
+lint-results*.xml
+lint-results*.html
 
 # Android Studio
 *.hprof
+
 # Gradle output captured by CI for diagnosability
 gradle-*.log

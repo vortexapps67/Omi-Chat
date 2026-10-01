@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,60m-55,0a55,55 0,1 1,110 0a55,55 0,1 1,-110 0" />
+    <!-- "pop" text - represented as three circles for the logo -->
+    <path
+        android:fillColor="#1E88E5"
+        android:pathData="M60,35m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M40,55m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0" />
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M80,55m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0" />
+</vector>

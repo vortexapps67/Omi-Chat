@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup and device-transfer rules for Android 12 and above.
+
+  Both sections are identical on purpose: a device-to-device transfer should
+  carry the same data as a cloud backup, and keeping them aligned means an
+  account restored onto a new phone is not quietly missing half its state.
+
+  As in backup_rules.xml, the presence of an <include> makes this an allow-list,
+  so the `file` domain is excluded by omission rather than by <exclude> - an
+  exclude outside an included path is not an error, but it is misleading
+  configuration that suggests protection that is not actually configured.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="." />
+        <include domain="database" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="." />
+        <include domain="database" path="." />
+    </device-transfer>
+</data-extraction-rules>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules for Android 11 and below (see data_extraction_rules.xml for
+  Android 12+).
+
+  Presence of any <include> switches backup to allow-list mode: only the paths
+  listed here are backed up. Preferences and the Room database are what carry
+  the signed-in session and the local message cache, so they are included.
+
+  The `file` domain - which is where Coil's disk image cache would live - is
+  deliberately *not* included. Listing <exclude> entries for it would be dead
+  configuration, because an exclude only means something inside a path that is
+  itself being backed up.
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="." />
+    <include domain="database" path="." />
+</full-backup-content>
