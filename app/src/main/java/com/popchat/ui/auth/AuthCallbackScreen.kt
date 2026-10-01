@@ -1,27 +1,21 @@
 package com.popchat.ui.auth
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.popchat.ui.theme.Theme.OmiChatTheme
-import kotlinx.coroutines.launch
+import com.popchat.ui.theme.OmiChatTheme
 
+/**
+ * Receives the Supabase auth redirect.
+ *
+ * Supabase's Android SDK installs its own callback activity for the deep link;
+ * this one exists so the redirect resolves back into the app's own theme and
+ * shows the shared [AuthCallbackScreen] while the session is exchanged, instead
+ * of dropping the user on a blank system window.
+ */
 class AuthCallbackActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -38,23 +32,11 @@ class AuthCallbackActivity : ComponentActivity() {
     }
 
     private fun handleDeepLink(intent: Intent) {
-        val uri = intent.data
-        if (uri != null) {
-            // Supabase handles the auth callback automatically
-            // Just navigate back to main
+        // The Supabase client picks the redirect up from its own activity; here
+        // we only need to make sure this window is not left on screen. Finishing
+        // hands control back to MainActivity, which observes the session.
+        if (intent.data != null) {
+            finish()
         }
-    }
-}
-
-@Composable
-fun AuthCallbackScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        CircularProgressIndicator(modifier = Modifier.size(48.dp))
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(top = 16.dp))
-        Text("Completing sign in...", fontSize = 16.sp)
     }
 }

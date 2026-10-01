@@ -1,113 +1,137 @@
 package com.popchat.ui.onboarding
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Painter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.popchat.ui.common.PillButton
-import com.popchat.ui.common.OutlinedPillButton
 import com.popchat.ui.common.TextButton
+import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatBlue
 import com.popchat.ui.theme.OmiChatGreen
-import com.popchat.ui.theme.OmiChatTheme
 import com.popchat.ui.theme.OmiChatYellow
+import com.popchat.ui.theme.glassPanel
+import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
 ) {
-    var currentPage by remember { mutableStateOf(0) }
-    val pages = remember { onboardingPages }
+    val pagerState = rememberPagerState(pageCount = { onboardingPages.size })
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        // Page content
-        androidx.compose.foundation.pager.HorizontalPager(
-            count = pages.size,
-            state = androidx.compose.foundation.pager.rememberPagerState(initialPage = currentPage),
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .weight(1f),
-            onPageChanged = { currentPage = it }
         ) { page ->
-            val data = pages[page]
+            val data = onboardingPages[page]
             OnboardingPage(
                 illustration = data.illustration,
                 title = data.title,
-                subtitle = data.subtitle
+                subtitle = data.subtitle,
             )
         }
 
-        // Bottom section with pagination and buttons
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 24.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            // Pagination dots
+            // The active dot shares the glass language so the indicator reads as
+            // part of the surface rather than a separate widget.
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                pages.indices.forEach { index ->
-                    androidx.compose.foundation.layout.Box(
+                repeat(onboardingPages.size) { index ->
+                    val selected = pagerState.currentPage == index
+                    Box(
                         modifier = Modifier
-                            .size(if (index == currentPage) 24.dp else 8.dp, 8.dp)
-                            .background(
-                                color = if (index == currentPage) OmiChatBlue else OmiChatBlue.copy(alpha = 0.3f),
-                                shape = androidx.compose.ui.graphics.RoundedCornerShape(4.dp)
+                            .height(8.dp)
+                            .width(if (selected) 26.dp else 8.dp)
+                            .glassPanel(
+                                shape = RoundedCornerShape(4.dp),
+                                level = GlassLevel.Thin,
+                                accent = if (selected) OmiChatBlue else Color.Unspecified,
                             )
-                            .animateContentSize()
+                            .background(
+                                color = if (selected) {
+                                    OmiChatBlue.copy(alpha = 0.85f)
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                                },
+                                shape = RoundedCornerShape(4.dp),
+                            )
                     )
                 }
             }
 
-            // Action buttons
-            Column(
+            val isLastPage = pagerState.currentPage == onboardingPages.lastIndex
+
+            PillButton(
+                text = if (isLastPage) "Get Started" else "Next",
+                onClick = {
+                    if (isLastPage) {
+                        onFinish()
+                    } else {
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (currentPage == pages.lastIndex) {
-                    PillButton(
-                        text = "Get Started",
-                        onClick = onFinish,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    PillButton(
-                        text = "Get Started",
-                        onClick = { /* Navigate to next or finish */ },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                TextButton(
-                    text = "Already have an account? Log In",
-                    onClick = onLoginClick
-                )
-            }
+            )
+
+            TextButton(
+                text = "Already have an account? Log In",
+                onClick = onLoginClick,
+            )
         }
     }
 }
@@ -116,157 +140,219 @@ fun OnboardingScreen(
 fun OnboardingPage(
     illustration: (@Composable () -> Unit)? = null,
     title: String,
-    subtitle: String
+    subtitle: String,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Skip button at top right
-        androidx.compose.foundation.layout.Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.TopEnd
+        illustration?.invoke() ?: DefaultIllustration()
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Copy sits on its own glass card so it stays legible over the animated
+        // mesh backdrop, which is busy enough to hurt raw text contrast.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .glassPanel(
+                    shape = RoundedCornerShape(28.dp),
+                    level = GlassLevel.Thick,
+                )
+                .padding(horizontal = 24.dp, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            TextButton(
-                text = "Skip",
-                onClick = { /* Skip onboarding */ },
-                modifier = Modifier.padding(24.dp),
-                color = OmiChatTheme.colorScheme.onSurfaceVariant
+            Text(
+                text = title,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = subtitle,
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+/**
+ * Logo lockup.
+ *
+ * Three glass orbs drift out of phase on a single shared transition, so the
+ * motion stays on one clock instead of three.
+ */
+@Composable
+fun DefaultIllustration() {
+    val transition = rememberInfiniteTransition(label = "onboarding")
+    val breathe by transition.animateFloat(
+        initialValue = 0.94f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2600),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "breathe",
+    )
+    val pulse by transition.animateFloat(
+        initialValue = 0.7f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2600, delayMillis = 400),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "pulse",
+    )
+
+    Box(
+        modifier = Modifier.size(260.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Soft halo behind the mark.
+        Box(
+            modifier = Modifier
+                .size(220.dp)
+                .scale(breathe)
+                .alpha(pulse * 0.5f)
+                .background(
+                    color = OmiChatBlue.copy(alpha = 0.10f),
+                    shape = CircleShape,
+                )
+        )
+
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .scale(breathe)
+                .glassPanel(
+                    shape = CircleShape,
+                    level = GlassLevel.Ultra,
+                    accent = OmiChatBlue,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "omi",
+                fontSize = 38.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
             )
         }
 
-        // Illustration
-        illustration?.invoke() ?: DefaultIllustration()
-
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(top = 48.dp))
-
-        // Title
-        Text(
-            text = title,
-            fontSize = 28.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            color = OmiChatTheme.colorScheme.onSurface,
-            textAlign = androidx.compose.ui.text.TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 32.dp)
+        OrbDot(
+            color = OmiChatGreen,
+            size = 52,
+            offsetX = 86,
+            offsetY = (-46),
+            delayMillis = 0,
         )
-
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(top = 16.dp))
-
-        // Subtitle
-        Text(
-            text = subtitle,
-            fontSize = 16.sp,
-            color = OmiChatTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 32.dp),
-            lineHeight = 24.sp
+        OrbDot(
+            color = OmiChatYellow,
+            size = 42,
+            offsetX = (-76),
+            offsetY = 54,
+            delayMillis = 260,
+        )
+        OrbDot(
+            color = OmiChatBlue,
+            size = 36,
+            offsetX = 64,
+            offsetY = 76,
+            delayMillis = 520,
         )
     }
 }
 
+/** A small drifting glass orb used to decorate the illustrations. */
 @Composable
-fun DefaultIllustration() {
-    // Floating speech bubbles animation
-    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "")
-    
+private fun OrbDot(
+    color: Color,
+    size: Int,
+    offsetX: Int,
+    offsetY: Int,
+    delayMillis: Int,
+) {
+    val transition = rememberInfiniteTransition(label = "orb$size")
+    val drift by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, delayMillis = delayMillis),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "drift$size",
+    )
+
     Box(
-        modifier = Modifier.size(280.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        // Background bubble
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .background(OmiChatBlue.copy(alpha = 0.1f), androidx.compose.ui.graphics.CircleShape)
-        )
-        
-        // Main "pop" bubble
-        Box(
-            modifier = Modifier
-                .size(140.dp)
-                .background(OmiChatBlue, androidx.compose.ui.graphics.CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "omi",
-                fontSize = 36.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = androidx.compose.ui.graphics.Color.White
-            )
-        }
-        
-        // Accent bubbles
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .background(OmiChatGreen, androidx.compose.ui.graphics.CircleShape)
-                .offset(x = 80.dp, y = -40.dp)
-        )
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(OmiChatYellow, androidx.compose.ui.graphics.CircleShape)
-                .offset(x = -70.dp, y = 50.dp)
-        )
-        Box(
-            modifier = Modifier
-                .size(35.dp)
-                .background(OmiChatBlue.copy(alpha = 0.7f), androidx.compose.ui.graphics.CircleShape)
-                .offset(x = 60.dp, y = 70.dp)
-        )
-    }
+        modifier = Modifier
+            .size(size.dp)
+            .offset(x = (offsetX + drift).dp, y = (offsetY - drift).dp)
+            .glassPanel(
+                shape = CircleShape,
+                level = GlassLevel.Thick,
+                accent = color,
+            ),
+    )
 }
 
 data class OnboardingPageData(
     val illustration: (@Composable () -> Unit)?,
     val title: String,
-    val subtitle: String
+    val subtitle: String,
 )
 
 val onboardingPages = listOf(
     OnboardingPageData(
         illustration = { DefaultIllustration() },
         title = "Chat Without Limits",
-        subtitle = "Send texts, voice notes, photos, videos, and files instantly. No limits, no compression."
+        subtitle = "Send texts, voice notes, photos, videos, and files instantly. No limits, no compression.",
     ),
     OnboardingPageData(
         illustration = { PeopleIllustration() },
         title = "Meet New People",
-        subtitle = "Discover communities, join group chats, and connect with people who share your interests."
+        subtitle = "Discover communities, join group chats, and connect with people who share your interests.",
     ),
     OnboardingPageData(
         illustration = { SecureIllustration() },
         title = "Stay Secure & Private",
-        subtitle = "End-to-end encryption, disappearing messages, and full control over your data."
-    )
+        subtitle = "End-to-end encryption, disappearing messages, and full control over your data.",
+    ),
 )
 
 @Composable
 fun PeopleIllustration() {
     Box(
-        modifier = Modifier.size(280.dp),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.size(260.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        // Stacked profile circles
-        (0..3).forEach { index ->
+        val palette = listOf(OmiChatBlue, OmiChatGreen, OmiChatYellow)
+        repeat(4) { index ->
             Box(
                 modifier = Modifier
-                    .size(100.dp)
-                    .background(
-                        color = when (index % 3) {
-                            0 -> OmiChatBlue
-                            1 -> OmiChatGreen
-                            else -> OmiChatYellow
-                        },
-                        shape = androidx.compose.ui.graphics.CircleShape
-                    )
-                    .border(3.dp, androidx.compose.ui.graphics.Color.White, androidx.compose.ui.graphics.CircleShape)
+                    .size(104.dp)
                     .offset(x = (-30 * index).dp, y = (15 * index).dp)
                     .zIndex((3 - index).toFloat())
-            ) {
-                // Could add initials here
-            }
+                    .glassPanel(
+                        shape = CircleShape,
+                        level = GlassLevel.Thick,
+                        accent = palette[index % palette.size],
+                    )
+                    .border(
+                        width = 2.dp,
+                        color = Color.White.copy(alpha = 0.45f),
+                        shape = CircleShape,
+                    )
+            )
         }
     }
 }
@@ -274,35 +360,43 @@ fun PeopleIllustration() {
 @Composable
 fun SecureIllustration() {
     Box(
-        modifier = Modifier.size(280.dp),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.size(260.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        // Shield icon
         Box(
             modifier = Modifier
-                .size(160.dp)
-                .background(OmiChatBlue.copy(alpha = 0.1f), androidx.compose.ui.graphics.CircleShape)
-        )
-        
-        androidx.compose.material3.Icon(
-            imageVector = androidx.compose.material.icons.Icons.Default.Shield,
-            contentDescription = "Security",
-            modifier = Modifier.size(80.dp),
-            tint = OmiChatBlue
-        )
-        
-        // Check mark
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(OmiChatGreen, androidx.compose.ui.graphics.CircleShape)
-                .offset(x = 60.dp, y = 60.dp)
+                .size(170.dp)
+                .glassPanel(
+                    shape = CircleShape,
+                    level = GlassLevel.Thick,
+                    accent = OmiChatBlue,
+                ),
+            contentAlignment = Alignment.Center,
         ) {
-            androidx.compose.material3.Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Check,
+            Icon(
+                imageVector = Icons.Default.Shield,
+                contentDescription = "Security",
+                modifier = Modifier.size(84.dp),
+                tint = OmiChatBlue,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .offset(x = 62.dp, y = 62.dp)
+                .glassPanel(
+                    shape = CircleShape,
+                    level = GlassLevel.Thick,
+                    accent = OmiChatGreen,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
                 contentDescription = "Verified",
                 modifier = Modifier.size(24.dp),
-                tint = androidx.compose.ui.graphics.Color.White
+                tint = Color.White,
             )
         }
     }

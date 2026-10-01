@@ -3,9 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.google.services)
 }
 
 // Load .env file for local development
@@ -143,12 +142,12 @@ dependencies {
 
     // Hilt DI
     implementation(libs.androidx.hilt.navigation.compose)
-    kapt(libs.androidx.hilt.compiler)
+    ksp(libs.androidx.hilt.compiler)
 
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Coroutines & Serialization
     implementation(libs.kotlinx.coroutines.android)
@@ -215,11 +214,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
-kapt {
-    correctErrorTypes = true
-    javacOptions {
-        option("-Xlint:unchecked")
-    }
+ksp {
+    // Mirrors the old kapt `correctErrorTypes` behaviour for Room's generated
+    // DAO/database bindings.
+    arg("room.generateKotlin", "true")
+    arg("room.incremental", "true")
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

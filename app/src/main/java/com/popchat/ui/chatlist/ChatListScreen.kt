@@ -1,17 +1,33 @@
 package com.popchat.ui.chatlist
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -24,80 +40,79 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.FilterChip
 import com.popchat.ui.common.OutlinedInputField
+import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatBlue
-import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.glassPanel
 
 @Composable
 fun ChatListScreen(
     onOpenChat: (String) -> Unit,
     onNewChat: () -> Unit,
     onSearch: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
 ) {
     var searchText by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(0) }
     val filters = listOf("All", "Friends", "Groups", "Channels")
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
-    ) {
-        // Top App Bar
+    Column(modifier = Modifier.fillMaxSize()) {
+        // App bar: transparent Surface so only the glass pane shows through.
         TopAppBar(
+            modifier = Modifier.glassPanel(
+                shape = RoundedCornerShape(0.dp),
+                level = GlassLevel.Thick,
+            ),
             title = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     LogoMark()
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Omi Chat",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = OmiChatTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
+                containerColor = Color.Transparent,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
             ),
             actions = {
-                // Search
-                androidx.compose.material3.IconButton(onClick = onSearch) {
+                IconButton(onClick = onSearch) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Search,
+                        imageVector = Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                // New chat
-                androidx.compose.material3.IconButton(onClick = onNewChat) {
+                IconButton(onClick = onNewChat) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.ChatBubbleOutline,
+                        imageVector = Icons.Default.ChatBubbleOutline,
                         contentDescription = "New chat",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                // More options
-                androidx.compose.material3.IconButton(onClick = { /* More options */ }) {
+                IconButton(onClick = onProfileClick) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
+                        imageVector = Icons.Default.MoreVert,
                         contentDescription = "More options",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-            }
+            },
         )
 
-        // Search Bar
         OutlinedInputField(
             value = searchText,
             onValueChange = { searchText = it },
@@ -106,46 +121,37 @@ fun ChatListScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            trailingIcon = androidx.compose.material.icons.Icons.Default.Search
+            trailingIcon = Icons.Default.Search,
+            onTrailingIconClick = onSearch,
         )
 
-        // Filter Pills
-        androidx.compose.foundation.layout.Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
-            androidx.compose.foundation.lazy.LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 0.dp)
-            ) {
-                items(filters) { filter ->
-                    FilterChip(
-                        text = filter,
-                        isSelected = filters.indexOf(filter) == selectedFilter,
-                        onClick = { selectedFilter = filters.indexOf(filter) }
-                    )
-                }
+            items(filters) { filter ->
+                FilterChip(
+                    text = filter,
+                    isSelected = filters.indexOf(filter) == selectedFilter,
+                    onClick = { selectedFilter = filters.indexOf(filter) },
+                )
             }
         }
 
-        // Chat List
+        Spacer(modifier = Modifier.size(12.dp))
+
+        // Grouped rows: separate glass cards rather than a divided flat list, so
+        // each conversation reads as a discrete pane on the mesh backdrop.
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 8.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(sampleChats) { chat ->
+            items(sampleChats, key = { it.id }) { chat ->
                 ChatListItem(
                     chat = chat,
-                    onClick = { onOpenChat(chat.id) }
-                )
-                androidx.compose.material3.Divider(
-                    modifier = Modifier.padding(start = 72.dp),
-                    color = OmiChatTheme.colorScheme.outlineVariant,
-                    thickness = 0.5.dp
+                    onClick = { onOpenChat(chat.id) },
                 )
             }
         }
@@ -155,94 +161,108 @@ fun ChatListScreen(
 @Composable
 fun ChatListItem(
     chat: ChatItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
-    val colors = OmiChatTheme.colorScheme
-    val time = formatTime(chat.timestamp)
+    val colors = MaterialTheme.colorScheme
+    val time = formatChatTime(chat.timestamp)
 
-    androidx.compose.material3.ListItem(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onClick)
-            .background(colors.surface),
-        leading = {
-            Avatar(
-                imageUrl = chat.avatarUrl,
-                name = chat.name,
-                size = 56,
-                showOnlineIndicator = !chat.isGroup,
-                isOnline = chat.isOnline
+            .glassPanel(
+                shape = RoundedCornerShape(22.dp),
+                level = GlassLevel.Regular,
             )
-        },
-        headlineContent = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Avatar(
+            imageUrl = chat.avatarUrl,
+            name = chat.name,
+            size = 52,
+            showOnlineIndicator = !chat.isGroup,
+            isOnline = chat.isOnline,
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = chat.name,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = time,
-                        fontSize = 12.sp,
-                        color = colors.onSurfaceVariant
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = chat.lastMessage,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.TextOverflow.Ellipsis,
-                        color = colors.onSurfaceVariant,
-                        fontSize = 14.sp
-                    )
-                    if (chat.unreadCount > 0) {
-                        Badge(
-                            badgeContent = {
-                                Text(
-                                    text = if (chat.unreadCount > 99) "99+" else chat.unreadCount.toString(),
-                                    fontSize = 10.sp,
-                                    color = colors.onErrorContainer
-                                )
-                            },
-                            backgroundColor = OmiChatBlue,
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            androidx.compose.foundation.layout.Box()
-                        }
+                Text(
+                    text = chat.name,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = time,
+                    fontSize = 12.sp,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = chat.lastMessage,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = colors.onSurfaceVariant,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (chat.unreadCount > 0) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Badge(
+                        containerColor = OmiChatBlue,
+                        contentColor = Color.White,
+                    ) {
+                        Text(
+                            text = if (chat.unreadCount > 99) "99+" else chat.unreadCount.toString(),
+                            fontSize = 10.sp,
+                        )
                     }
                 }
             }
-        },
-        trailing = {
-            if (chat.isMuted) {
-                Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.NotificationsOff,
-                    contentDescription = "Muted",
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-            if (chat.isPinned) {
-                Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.PushPin,
-                    contentDescription = "Pinned",
-                    tint = OmiChatBlue,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
+        }
+
+        if (chat.isMuted || chat.isPinned) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (chat.isPinned) {
+                    Icon(
+                        imageVector = Icons.Default.PushPin,
+                        contentDescription = "Pinned",
+                        tint = OmiChatBlue,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+                if (chat.isMuted) {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsOff,
+                        contentDescription = "Muted",
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
             }
         }
-    )
+    }
 }
 
 data class ChatItem(
@@ -255,7 +275,7 @@ data class ChatItem(
     val isGroup: Boolean,
     val isOnline: Boolean,
     val isMuted: Boolean = false,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
 )
 
 val sampleChats = listOf(
@@ -267,27 +287,28 @@ val sampleChats = listOf(
         unreadCount = 2,
         avatarUrl = null,
         isGroup = false,
-        isOnline = true
+        isOnline = true,
+        isPinned = true,
     ),
     ChatItem(
         id = "2",
         name = "Akshansh Sinha",
-        lastMessage = "Just sent you the file 📎",
+        lastMessage = "Just sent you the file \uD83D\uDCCE",
         timestamp = kotlinx.datetime.Instant.now().minusSeconds(3600),
         unreadCount = 0,
         avatarUrl = null,
         isGroup = false,
-        isOnline = true
+        isOnline = true,
     ),
     ChatItem(
         id = "3",
-        name = "Dev Team 🚀",
+        name = "Dev Team \uD83D\uDE80",
         lastMessage = "Riya: Meeting at 3pm today",
         timestamp = kotlinx.datetime.Instant.now().minusSeconds(7200),
         unreadCount = 5,
         avatarUrl = null,
         isGroup = true,
-        isOnline = false
+        isOnline = false,
     ),
     ChatItem(
         id = "4",
@@ -297,21 +318,22 @@ val sampleChats = listOf(
         unreadCount = 0,
         avatarUrl = null,
         isGroup = true,
-        isOnline = false
+        isOnline = false,
     ),
     ChatItem(
         id = "5",
         name = "Sarah Johnson",
-        lastMessage = "📷 Photo",
+        lastMessage = "\uD83D\uDCF7 Photo",
         timestamp = kotlinx.datetime.Instant.now().minusSeconds(172800),
         unreadCount = 1,
         avatarUrl = null,
         isGroup = false,
-        isOnline = false
-    )
+        isOnline = false,
+        isMuted = true,
+    ),
 )
 
-private fun formatTime(instant: kotlinx.datetime.Instant): String {
+private fun formatChatTime(instant: kotlinx.datetime.Instant): String {
     val now = kotlinx.datetime.Instant.now()
     val diff = now.epochMilliseconds - instant.epochMilliseconds
     val minutes = diff / (1000 * 60)
@@ -319,31 +341,36 @@ private fun formatTime(instant: kotlinx.datetime.Instant): String {
     val days = hours / 24
 
     return when {
-        minutes < 1 -> "now"
-        minutes < 60 -> "${minutes}m"
-        hours < 24 -> "${hours}h"
-        days < 7 -> "${days}d"
-        else -> kotlinx.datetime.format.DateTimeFormatter.ISO_LOCAL_DATE.format(instant)
+        minutes < 1L -> "now"
+        minutes < 60L -> "${minutes}m"
+        hours < 24L -> "${hours}h"
+        days < 7L -> "${days}d"
+        else -> instant
+            .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+            .date
+            .toString()
     }
 }
 
+/** The app mark: a frosted disc rather than a flat brand circle. */
 @Composable
 fun LogoMark() {
     Box(
-        modifier = Modifier.size(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .background(OmiChatBlue, androidx.compose.ui.graphics.CircleShape)
-        ) {
-            Text(
-                text = "omi",
-                fontSize = 12.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = androidx.compose.ui.graphics.Color.White
+        modifier = Modifier
+            .size(34.dp)
+            .glassPanel(
+                shape = CircleShape,
+                level = GlassLevel.Thick,
+                accent = OmiChatBlue,
             )
-        }
+            .background(OmiChatBlue.copy(alpha = 0.28f), CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "omi",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
     }
 }

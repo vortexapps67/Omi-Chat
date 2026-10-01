@@ -8,6 +8,8 @@ import com.popchat.util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,20 +20,19 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState = _uiState.asStateFlow()
 
-    private val _authState = authRepository.observeAuthState()
-        .map { state ->
-            when (state) {
-                is AuthState.SignedIn -> AuthUiState.Authenticated(state.user, state.session)
-                is AuthState.SignedOut -> AuthUiState.Unauthenticated(state.error)
-                AuthState.Loading -> AuthUiState.Loading
-            }
-        }
-
     init {
         viewModelScope.launch {
-            _authState.collect { state ->
-                _uiState.value = state
-            }
+            authRepository.observeAuthState()
+                .map { state ->
+                    when (state) {
+                        is AuthState.SignedIn -> AuthUiState.Authenticated(state.user, state.session)
+                        is AuthState.SignedOut -> AuthUiState.Unauthenticated(state.error)
+                        AuthState.Loading -> AuthUiState.Loading
+                    }
+                }
+                .collect { state ->
+                    _uiState.value = state
+                }
         }
     }
 
@@ -68,9 +69,9 @@ class AuthViewModel @Inject constructor(
     }
 
     sealed interface AuthUiState {
-        data class Loading : AuthUiState
+        data object Loading : AuthUiState
         data class Authenticated(val user: com.popchat.data.supabase.model.SupabaseUser, val session: com.popchat.data.supabase.model.SupabaseSession) : AuthUiState
         data class Unauthenticated(val error: String?) : AuthUiState
-        object Idle : AuthUiState
+        data object Idle : AuthUiState
     }
 }

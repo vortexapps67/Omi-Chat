@@ -3,201 +3,274 @@ package com.popchat.ui.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.hilt.navigation.compose.hiltNavController
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavGraphBuilder
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.CallOutline
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.ExploreOutline
+import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.bottomNavView
 import androidx.navigation.compose.currentBackStackEntryAsState
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.popchat.ui.auth.AuthCallbackScreen
-import com.popchat.ui.auth.AuthScreen
+import com.popchat.ui.auth.LoginScreen
+import com.popchat.ui.auth.RegisterScreen
+import com.popchat.ui.calls.CallHistoryScreen
 import com.popchat.ui.chat.ChatScreen
 import com.popchat.ui.chatlist.ChatListScreen
-import com.popchat.ui.calls.CallHistoryScreen
 import com.popchat.ui.discover.DiscoverScreen
 import com.popchat.ui.media.SharedMediaScreen
 import com.popchat.ui.onboarding.OnboardingScreen
 import com.popchat.ui.profile.ProfileScreen
 import com.popchat.ui.settings.SettingsScreen
-import com.popchat.ui.theme.Theme.OmiChatTheme
+import com.popchat.ui.theme.GlassLevel
+import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.glassPanel
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             OmiChatTheme {
-                val navController = rememberNavController()
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
-                val showBottomBar = currentRoute != "auth" && 
-                    currentRoute != "onboarding" && 
-                    currentRoute != "auth/callback" &&
-                    !currentRoute?.startsWith("chat/") == true &&
-                    !currentRoute?.startsWith("shared_media/") == true &&
-                    currentRoute != "call_history" &&
-                    currentRoute != "settings" &&
-                    currentRoute != "profile"
-
-                NavHost(navController, startDestination = "onboarding") {
-                    composable("onboarding") {
-                        OnboardingScreen(
-                            onFinish = { navController.navigate("auth") { popUpTo("onboarding") { inclusive = true } } },
-                            onLoginClick = { navController.navigate("auth") }
-                        )
-                    }
-                    composable("auth") {
-                        AuthScreen(
-                            onLoginClick = { email, password -> 
-                                // ViewModel handles auth
-                                navController.navigate("main") { popUpTo("auth") { inclusive = true } }
-                            },
-                            onForgotPassword = { /* Navigate to forgot password */ },
-                            onGoogleSignIn = { /* Handle Google sign in */ },
-                            onSignUpClick = { navController.navigate("register") }
-                        )
-                    }
-                    composable("register") {
-                        AuthScreen.RegisterScreen(
-                            onRegisterClick = { name, email, password ->
-                                // ViewModel handles registration
-                                navController.navigate("main") { popUpTo("auth") { inclusive = true } }
-                            },
-                            onGoogleSignIn = { /* Handle Google sign in */ },
-                            onLoginClick = { navController.popBackStack() }
-                        )
-                    }
-                    composable("auth/callback") {
-                        AuthCallbackScreen()
-                    }
-
-                    // Main navigation with bottom bar
-                    navigation(startDestination = "chats", route = "main") {
-                        composable("chats") {
-                            ChatListScreen(
-                                onOpenChat = { chatId ->
-                                    navController.navigate("chat/$chatId")
-                                },
-                                onNewChat = { navController.navigate("new_chat") },
-                                onSearch = { /* Show search */ },
-                                onProfileClick = { navController.navigate("profile") }
-                            )
-                        }
-                        composable("calls") {
-                            CallHistoryScreen(
-                                onBack = { /* Handled by nav */ },
-                                onCallBack = { name -> /* Start call */ }
-                            )
-                        }
-                        composable("discover") {
-                            DiscoverScreen(onBack = { /* Handled by nav */ })
-                        }
-                        composable("profile") {
-                            ProfileScreen(
-                                onBack = { /* Handled by nav */ },
-                                onEditProfile = { /* Navigate to edit profile */ },
-                                onSettingsClick = { action ->
-                                    when (action) {
-                                        "logout" -> navController.navigate("auth") { popUpTo("main") { inclusive = true } }
-                                        else -> navController.navigate("settings")
-                                    }
-                                }
-                            )
-                        }
-                    }
-
-                    // Chat detail
-                    composable(
-                        route = "chat/{chatId}",
-                        arguments = listOf(androidx.navigation.navArgument("chatId") { type = androidx.navigation.NavType.StringType })
-                    ) {
-                        val chatId = it.getString("chatId") ?: ""
-                        ChatScreen(
-                            chatName = "Chat $chatId",
-                            chatAvatar = null,
-                            isGroup = false,
-                            isOnline = true,
-                            onBack = { navController.popBackStack() },
-                            onCall = { /* Start voice call */ },
-                            onVideoCall = { /* Start video call */ },
-                            onMoreOptions = { /* Show options */ }
-                        )
-                    }
-
-                    // Shared Media
-                    composable(
-                        route = "shared_media/{chatName}",
-                        arguments = listOf(androidx.navigation.navArgument("chatName") { type = androidx.navigation.NavType.StringType })
-                    ) {
-                        val chatName = it.getString("chatName") ?: ""
-                        SharedMediaScreen(
-                            chatName = chatName,
-                            onBack = { navController.popBackStack() }
-                        )
-                    }
-
-                    // Settings
-                    composable("settings") {
-                        SettingsScreen(
-                            onBack = { navController.popBackStack() },
-                            onItemClick = { action ->
-                                when (action) {
-                                    "logout" -> navController.navigate("auth") { popUpTo("main") { inclusive = true } }
-                                    else -> { /* Handle settings navigation */ }
-                                }
-                            }
-                        )
-                    }
-                }
-
-                // Bottom Navigation Bar
-                if (showBottomBar) {
-                    BottomNavigationBar(navController = navController)
-                }
+                OmiChatApp()
             }
         }
     }
 }
 
+private data class BottomNavItem(
+    val label: String,
+    val route: String,
+    val icon: ImageVector,
+    val selectedIcon: ImageVector,
+)
+
+private val bottomNavItems = listOf(
+    BottomNavItem("Chats", "chats", Icons.Outlined.ChatBubbleOutline, Icons.Filled.ChatBubble),
+    BottomNavItem("Calls", "calls", Icons.Outlined.CallOutline, Icons.Filled.Call),
+    BottomNavItem("Discover", "discover", Icons.Outlined.ExploreOutline, Icons.Filled.Explore),
+    BottomNavItem("Profile", "profile", Icons.Outlined.PersonOutline, Icons.Filled.Person),
+)
+
+/** Routes that own the full screen and should not carry the bottom bar. */
+private val fullScreenRoutes = setOf(
+    "onboarding",
+    "auth",
+    "register",
+    "auth/callback",
+    "settings",
+)
+
+private fun shouldShowBottomBar(route: String?): Boolean {
+    if (route == null) return false
+    if (route in fullScreenRoutes) return false
+    // Detail routes ("chat/{chatId}", "shared_media/{chatName}") push their own
+    // header and are far too tall for a bar plus their own app bar.
+    return !route.startsWith("chat/") && !route.startsWith("shared_media/")
+}
+
 @Composable
-fun BottomNavigationBar(navController: androidx.navigation.NavController) {
-    val items = listOf(
-        BottomNavItem("Chats", "chats", androidx.compose.material.icons.Icons.Default.ChatBubbleOutline, androidx.compose.material.icons.Icons.Default.ChatBubble),
-        BottomNavItem("Calls", "calls", androidx.compose.material.icons.Icons.Default.CallOutline, androidx.compose.material.icons.Icons.Default.Call),
-        BottomNavItem("Discover", "discover", androidx.compose.material.icons.Icons.Default.ExploreOutline, androidx.compose.material.icons.Icons.Default.Explore),
-        BottomNavItem("Profile", "profile", androidx.compose.material.icons.Icons.Default.PersonOutline, androidx.compose.material.icons.Icons.Default.Person)
-    )
-
+fun OmiChatApp() {
+    val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.hierarchy?.any { it.route == "main" } == true
-    val currentDestination = navBackStackEntry?.destination?.route
+    val currentRoute = navBackStackEntry?.destination?.route
+    val showBottomBar = shouldShowBottomBar(currentRoute)
 
-    androidx.compose.material3.BottomNavigation(
-        modifier = androidx.compose.foundation.layout.Modifier.fillMaxWidth(),
-        backgroundColor = OmiChatTheme.colorScheme.surfaceContainerLow,
-        containerColor = OmiChatTheme.colorScheme.surfaceContainerLow,
-        contentColor = OmiChatTheme.colorScheme.onSurface
-    ) {
-        items.forEach { item ->
-            val isSelected = currentDestination?.startsWith(item.route) == true
-            androidx.compose.material3.BottomNavigationItem(
-                icon = {
-                    Icon(
-                        imageVector = if (isSelected) item.selectedIcon else item.icon,
-                        contentDescription = item.label,
-                        tint = if (isSelected) OmiChatTheme.colorScheme.primary else OmiChatTheme.colorScheme.onSurfaceVariant
+    Scaffold(
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        bottomBar = {
+            if (showBottomBar) {
+                GlassBottomNavigation(navController)
+            }
+        },
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "onboarding",
+            modifier = Modifier.padding(innerPadding),
+        ) {
+            composable("onboarding") {
+                OnboardingScreen(
+                    onFinish = {
+                        navController.navigate("auth") {
+                            popUpTo("onboarding") { inclusive = true }
+                        }
+                    },
+                    onLoginClick = { navController.navigate("auth") },
+                )
+            }
+
+            composable("auth") {
+                LoginScreen(
+                    onLoginClick = { _, _ -> },
+                    onForgotPassword = { /* Route to the reset-password flow */ },
+                    onGoogleSignIn = { /* Start the Supabase OAuth session */ },
+                    onSignUpClick = { navController.navigate("register") },
+                )
+            }
+
+            composable("register") {
+                RegisterScreen(
+                    onRegisterClick = { _, _, _ -> },
+                    onGoogleSignIn = { /* Start the Supabase OAuth session */ },
+                    onLoginClick = { navController.popBackStack() },
+                )
+            }
+
+            composable("auth/callback") {
+                AuthCallbackScreen()
+            }
+
+            navigation(startDestination = "chats", route = "main") {
+                composable("chats") {
+                    ChatListScreen(
+                        onOpenChat = { chatId -> navController.navigate("chat/$chatId") },
+                        onNewChat = { navController.navigate("discover") },
+                        onSearch = { /* Focus the search field */ },
+                        onProfileClick = { navController.navigate("profile") },
                     )
+                }
+
+                composable("calls") {
+                    CallHistoryScreen(
+                        onBack = { navController.popBackStack() },
+                        onCallBack = { /* Start a call to this contact */ },
+                    )
+                }
+
+                composable("discover") {
+                    DiscoverScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable("profile") {
+                    ProfileScreen(
+                        onBack = { navController.popBackStack() },
+                        onEditProfile = { /* Route to the edit-profile screen */ },
+                        onSettingsClick = { action ->
+                            when (action) {
+                                "logout" -> navController.navigate("auth") {
+                                    popUpTo("main") { inclusive = true }
+                                }
+                                else -> navController.navigate("settings")
+                            }
+                        },
+                    )
+                }
+            }
+
+            composable(
+                route = "chat/{chatId}",
+                arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
+            ) { entry ->
+                val chatId = entry.arguments?.getString("chatId").orEmpty()
+                ChatScreen(
+                    chatName = "Chat $chatId",
+                    chatAvatar = null,
+                    isGroup = false,
+                    isOnline = true,
+                    onBack = { navController.popBackStack() },
+                    onCall = { /* Start a voice call */ },
+                    onVideoCall = { /* Start a video call */ },
+                    onMoreOptions = { /* Show the message actions sheet */ },
+                )
+            }
+
+            composable(
+                route = "shared_media/{chatName}",
+                arguments = listOf(navArgument("chatName") { type = NavType.StringType }),
+            ) { entry ->
+                SharedMediaScreen(
+                    chatName = entry.arguments?.getString("chatName").orEmpty(),
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable("settings") {
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onItemClick = { action ->
+                        when (action) {
+                            "logout" -> navController.navigate("auth") {
+                                popUpTo("main") { inclusive = true }
+                            }
+                            else -> { /* Handle the remaining settings destinations */ }
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Floating frosted navigation bar.
+ *
+ * Sits on a glass pane rather than a Material `NavigationBar` container, so the
+ * mesh backdrop stays visible behind the tabs. The selected item gets a tinted
+ * glass pill instead of a filled indicator, keeping the same depth language as
+ * the rest of the app.
+ */
+@Composable
+fun GlassBottomNavigation(navController: NavHostController) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    NavigationBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .glassPanel(
+                shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp),
+                level = GlassLevel.Thick,
+            ),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 0.dp,
+    ) {
+        bottomNavItems.forEach { item ->
+            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+            val tint by animateColorAsState(
+                targetValue = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
                 },
-                label = { Text(text = item.label, fontSize = 12.sp) },
-                selected = isSelected,
+                label = "navItemTint",
+            )
+
+            NavigationBarItem(
+                selected = selected,
                 onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -205,15 +278,28 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
                         restoreState = true
                     }
                 },
-                alwaysShowLabel = true
+                icon = {
+                    Icon(
+                        imageVector = if (selected) item.selectedIcon else item.icon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(24.dp),
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        fontSize = 11.sp,
+                    )
+                },
+                alwaysShowLabel = true,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = tint,
+                    selectedTextColor = tint,
+                    indicatorColor = Color.Transparent,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
             )
         }
     }
 }
-
-data class BottomNavItem(
-    val label: String,
-    val route: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector
-)

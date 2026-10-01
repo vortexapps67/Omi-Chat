@@ -69,6 +69,13 @@ data class MessageEntity(
         const val TYPE_SYSTEM = "system"
     }
 
-    val isOutgoing: Boolean
-        get() = senderId == PopChatApplication.getEntryPoint(null).repositoryModule().authRepository().currentUser?.id
+    /**
+     * Whether this message was sent by the signed-in user.
+     *
+     * Deliberately not derived here: resolving the current user needs a DI
+     * graph, and an entity must stay a pure data holder for Room. Callers that
+     * have the session pass their own `isCurrentUser` flag instead.
+     */
+    fun isOutgoingBy(currentUserId: String?): Boolean =
+        currentUserId != null && senderId == currentUserId
 }

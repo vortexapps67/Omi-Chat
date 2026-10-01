@@ -1,6 +1,7 @@
 package com.popchat.ui.common
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -13,8 +14,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatGreen
+import com.popchat.ui.theme.GlassLevel
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatGreen
+import com.popchat.ui.theme.glassPanel
 import io.coil.compose.AsyncImage
 import io.coil.compose.rememberAsyncImagePainter
 
@@ -51,7 +54,7 @@ fun Avatar(
                 modifier = Modifier
                     .size((size * 0.3).toInt().dp)
                     .align(Alignment.BottomEnd)
-                    .background(PopChatGreen, CircleShape)
+                    .background(OmiChatGreen, CircleShape)
                     .border(3.dp, Color.White, CircleShape)
             )
         }
@@ -61,19 +64,29 @@ fun Avatar(
 @Composable
 private fun drawInitials(name: String?, size: Int) {
     val initials = name?.split(" ")?.map { it.first().uppercase() }?.joinToString("")?.take(2) ?: "?"
-    androidx.compose.foundation.text.BasicText(
-        text = androidx.compose.ui.text.AnnotatedString(initials),
-        fontSize = (size * 0.4).sp,
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-        color = androidx.compose.ui.graphics.Color.White,
-        modifier = Modifier.size(size.dp).background(PopChatBlue).clip(CircleShape),
-        textAlign = androidx.compose.ui.text.TextAlign.Center,
-        style = androidx.compose.ui.text.TextStyle(
+    // Avatar placeholders are frosted glass discs rather than flat brand circles,
+    // so un-provisioned accounts sit in the same visual language as the panes
+    // layered over them.
+    Box(
+        modifier = Modifier
+            .size(size.dp)
+            .glassPanel(shape = CircleShape, level = GlassLevel.Thick, accent = OmiChatBlue),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.foundation.text.BasicText(
+            text = androidx.compose.ui.text.AnnotatedString(initials),
             fontSize = (size * 0.4).sp,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            color = androidx.compose.ui.graphics.Color.White
+            color = androidx.compose.ui.graphics.Color.White,
+            modifier = Modifier.fillMaxSize(),
+            textAlign = androidx.compose.ui.text.TextAlign.Center,
+            style = androidx.compose.ui.text.TextStyle(
+                fontSize = (size * 0.4).sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = androidx.compose.ui.graphics.Color.White
+            )
         )
-    )
+    }
 }
 
 @Composable

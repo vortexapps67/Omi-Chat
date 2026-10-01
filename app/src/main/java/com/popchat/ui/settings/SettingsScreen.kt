@@ -1,15 +1,43 @@
 package com.popchat.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DataUsage
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -22,220 +50,248 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.PillButton
-import com.popchat.ui.theme.OmiChatBlue
-import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.GlassLevel
+import com.popchat.ui.theme.glassPanel
 
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    onItemClick: (String) -> Unit
+    onItemClick: (String) -> Unit,
 ) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkModeEnabled by remember { mutableStateOf(false) }
     var biometricEnabled by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
+            modifier = Modifier.glassPanel(
+                shape = RoundedCornerShape(0.dp),
+                level = GlassLevel.Thick,
+            ),
             title = { Text("Settings") },
             navigationIcon = {
-                androidx.compose.material3.IconButton(onClick = onBack) {
+                IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
-                        contentDescription = "Back"
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
-            )
+                containerColor = Color.Transparent,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
         )
 
-        androidx.compose.foundation.lazy.LazyColumn(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
+            // Generous bottom padding keeps the last group clear of the floating
+            // navigation bar.
+            contentPadding = PaddingValues(bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            // Account Section
             item {
                 SettingsSection(
                     title = "Account",
                     items = listOf(
-                        SettingsItem("Profile", androidx.compose.material.icons.Icons.Default.Person) { onItemClick("profile") },
-                        SettingsItem("Privacy & Security", androidx.compose.material.icons.Icons.Default.Security) { onItemClick("privacy") },
-                        SettingsItem("Notifications", androidx.compose.material.icons.Icons.Default.Notifications, trailing = {
-                            Switch(
-                                checked = notificationsEnabled,
-                                onCheckedChange = { notificationsEnabled = it },
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }) { onItemClick("notifications") },
-                    )
+                        SettingsItem("Profile", Icons.Default.Person) { onItemClick("profile") },
+                        SettingsItem("Privacy & Security", Icons.Default.Security) { onItemClick("privacy") },
+                        SettingsItem(
+                            title = "Notifications",
+                            icon = Icons.Default.Notifications,
+                            trailing = {
+                                Switch(
+                                    checked = notificationsEnabled,
+                                    onCheckedChange = { notificationsEnabled = it },
+                                )
+                            },
+                        ) { onItemClick("notifications") },
+                    ),
                 )
             }
 
-            // Appearance Section
             item {
                 SettingsSection(
                     title = "Appearance",
                     items = listOf(
-                        SettingsItem("Dark Mode", androidx.compose.material.icons.Icons.Default.DarkMode, trailing = {
-                            Switch(
-                                checked = darkModeEnabled,
-                                onCheckedChange = { darkModeEnabled = it },
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }) { onItemClick("darkMode") },
-                        SettingsItem("Theme Color", androidx.compose.material.icons.Icons.Default.Palette) { onItemClick("themeColor") },
-                        SettingsItem("Chat Wallpaper", androidx.compose.material.icons.Icons.Default.Wallpaper) { onItemClick("wallpaper") },
-                        SettingsItem("Font Size", androidx.compose.material.icons.Icons.Default.FormatSize) { onItemClick("fontSize") },
-                    )
+                        SettingsItem(
+                            title = "Dark Mode",
+                            icon = Icons.Default.DarkMode,
+                            trailing = {
+                                Switch(
+                                    checked = darkModeEnabled,
+                                    onCheckedChange = { darkModeEnabled = it },
+                                )
+                            },
+                        ) { onItemClick("darkMode") },
+                        SettingsItem("Theme Color", Icons.Default.Palette) { onItemClick("themeColor") },
+                        SettingsItem("Font Size", Icons.Default.FormatSize) { onItemClick("fontSize") },
+                    ),
                 )
             }
 
-            // Chat Settings Section
             item {
                 SettingsSection(
                     title = "Chats",
                     items = listOf(
-                        SettingsItem("Chat Backup", androidx.compose.material.icons.Icons.Default.Backup) { onItemClick("backup") },
-                        SettingsItem("Disappearing Messages", androidx.compose.material.icons.Icons.Default.Timer) { onItemClick("disappearing") },
-                        SettingsItem("Media Auto-Download", androidx.compose.material.icons.Icons.Default.Download) { onItemClick("mediaDownload") },
-                        SettingsItem("Chat History", androidx.compose.material.icons.Icons.Default.History) { onItemClick("history") },
-                    )
+                        SettingsItem("Chat Backup", Icons.Default.Backup) { onItemClick("backup") },
+                        SettingsItem("Disappearing Messages", Icons.Default.Timer) { onItemClick("disappearing") },
+                        SettingsItem("Media Auto-Download", Icons.Default.Download) { onItemClick("mediaDownload") },
+                    ),
                 )
             }
 
-            // Security Section
             item {
                 SettingsSection(
                     title = "Security",
                     items = listOf(
-                        SettingsItem("Biometric Lock", androidx.compose.material.icons.Icons.Default.Fingerprint, trailing = {
-                            Switch(
-                                checked = biometricEnabled,
-                                onCheckedChange = { biometricEnabled = it },
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }) { onItemClick("biometric") },
-                        SettingsItem("Two-Factor Authentication", androidx.compose.material.icons.Icons.Default.Shield) { onItemClick("2fa") },
-                        SettingsItem("Active Sessions", androidx.compose.material.icons.Icons.Default.Devices) { onItemClick("sessions") },
-                        SettingsItem("Blocked Contacts", androidx.compose.material.icons.Icons.Default.Block) { onItemClick("blocked") },
-                    )
+                        SettingsItem(
+                            title = "Biometric Lock",
+                            icon = Icons.Default.Fingerprint,
+                            trailing = {
+                                Switch(
+                                    checked = biometricEnabled,
+                                    onCheckedChange = { biometricEnabled = it },
+                                )
+                            },
+                        ) { onItemClick("biometric") },
+                        SettingsItem("Two-Factor Authentication", Icons.Default.VerifiedUser) { onItemClick("2fa") },
+                        SettingsItem("Active Sessions", Icons.Default.Devices) { onItemClick("sessions") },
+                        SettingsItem("Blocked Contacts", Icons.Default.Block) { onItemClick("blocked") },
+                    ),
                 )
             }
 
-            // Data & Storage Section
             item {
                 SettingsSection(
                     title = "Data & Storage",
                     items = listOf(
-                        SettingsItem("Storage Usage", androidx.compose.material.icons.Icons.Default.Storage) { onItemClick("storage") },
-                        SettingsItem("Data Usage", androidx.compose.material.icons.Icons.Default.DataUsage) { onItemClick("dataUsage") },
-                        SettingsItem("Export Data", androidx.compose.material.icons.Icons.Default.FileDownload) { onItemClick("export") },
-                        SettingsItem("Clear Cache", androidx.compose.material.icons.Icons.Default.DeleteSweep) { onItemClick("clearCache") },
-                    )
+                        SettingsItem("Storage Usage", Icons.Default.Storage) { onItemClick("storage") },
+                        SettingsItem("Data Usage", Icons.Default.DataUsage) { onItemClick("dataUsage") },
+                        SettingsItem("Clear Cache", Icons.Default.DeleteOutline) { onItemClick("clearCache") },
+                    ),
                 )
             }
 
-            // About Section
             item {
                 SettingsSection(
                     title = "About",
                     items = listOf(
-                        SettingsItem("Help & Support", androidx.compose.material.icons.Icons.Default.Help) { onItemClick("help") },
-                        SettingsItem("Terms of Service", androidx.compose.material.icons.Icons.Default.Description) { onItemClick("terms") },
-                        SettingsItem("Privacy Policy", androidx.compose.material.icons.Icons.Default.PrivacyTip) { onItemClick("privacy") },
-                        SettingsItem("Version 1.0.0 (Build 1)", androidx.compose.material.icons.Icons.Default.Info, clickable = false) { },
-                    )
+                        SettingsItem("Help & Support", Icons.Default.Help) { onItemClick("help") },
+                        SettingsItem(
+                            title = "Version 1.0.0 (Build 1)",
+                            icon = Icons.Default.Info,
+                            clickable = false,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        ) { },
+                    ),
                 )
             }
 
-            // Logout
             item {
-                androidx.compose.foundation.layout.Box(
+                PillButton(
+                    text = "Log Out",
+                    onClick = { onItemClick("logout") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 24.dp)
-                ) {
-                    PillButton(
-                        text = "Log Out",
-                        onClick = { onItemClick("logout") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                        .padding(horizontal = 16.dp)
+                        .height(56.dp),
+                )
             }
         }
     }
 }
 
+/**
+ * An iOS-style grouped settings block: a frosted card holding labelled rows.
+ *
+ * Rows share one pane instead of drawing dividers, so the group reads as a
+ * single object floating over the mesh rather than a ruled table.
+ */
 @Composable
 fun SettingsSection(
     title: String,
-    items: List<SettingsItem>
+    items: List<SettingsItem>,
+    modifier: Modifier = Modifier,
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
+
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = title.uppercase(),
             fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             color = colors.onSurfaceVariant,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp, bottom = 2.dp),
         )
 
-        items.forEachIndexed { index, item ->
-            val isLast = index == items.lastIndex
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(if (item.clickable) colors.surface else colors.surfaceContainerHighest)
-                    .clickable(enabled = item.clickable, onClick = item.onClick),
-                leading = {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .glassPanel(
+                    shape = RoundedCornerShape(20.dp),
+                    level = GlassLevel.Regular,
+                )
+                .padding(vertical = 4.dp),
+        ) {
+            items.forEachIndexed { index, item ->
+                val rowColor = item.tint ?: colors.onSurface
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = item.clickable, onClick = item.onClick)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = null,
-                        tint = if (item.clickable) colors.onSurfaceVariant else colors.onSurfaceVariant.copy(alpha = 0.5f)
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(22.dp),
                     )
-                },
-                headlineContent = {
+                    Spacer(modifier = Modifier.size(16.dp))
                     Text(
                         text = item.title,
                         fontSize = 16.sp,
-                        color = if (item.clickable) colors.onSurface else colors.onSurfaceVariant
+                        color = rowColor,
+                        modifier = Modifier.weight(1f),
                     )
-                },
-                trailing = item.trailing ?? {
-                    if (item.clickable) {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant.copy(alpha = 0.5f)
-                        )
-                    }
+                    item.trailing?.invoke()
+                        ?: if (item.clickable) {
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = colors.onSurfaceVariant.copy(alpha = 0.45f),
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
                 }
-            )
 
-            if (!isLast) {
-                androidx.compose.material3.Divider(
-                    modifier = Modifier.padding(start = 72.dp),
-                    color = colors.outlineVariant,
-                    thickness = 0.5.dp
-                )
+                if (index != items.lastIndex) {
+                    // Hairline separator, inset to the text baseline. A plain
+                    // translucent line reads better here than a glass pane —
+                    // frosting a 1dp strip just makes it look thicker.
+                    Spacer(
+                        modifier = Modifier
+                            .padding(start = 54.dp)
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(colors.outlineVariant.copy(alpha = 0.6f)),
+                    )
+                }
             }
         }
     }
@@ -243,8 +299,9 @@ fun SettingsSection(
 
 data class SettingsItem(
     val title: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val trailing: (@Composable () -> Unit)? = null,
     val clickable: Boolean = true,
-    val onClick: () -> Unit
+    val tint: Color? = null,
+    val onClick: () -> Unit,
 )

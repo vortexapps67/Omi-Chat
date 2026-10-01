@@ -1,47 +1,62 @@
 package com.popchat.ui.common
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton as MaterialTextButton
+import androidx.compose.material3.TextButtonDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Painter
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatBlue
-import com.popchat.ui.theme.OmiChatBlueContainer
-import com.popchat.ui.theme.OmiChatGreen
-import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.glassPanel
 
-// Primary Pill Button - Main CTA
+enum class IconPosition { Start, End }
+
+/**
+ * Primary call to action.
+ *
+ * Stays a solid brand gradient rather than glass: glass on a button reads as
+ * "dismiss", and this is the one control on each screen that must read as
+ * "commit".
+ */
 @Composable
 fun PillButton(
     text: String,
@@ -49,8 +64,8 @@ fun PillButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
-    iconPosition: IconPosition = IconPosition.End
+    icon: ImageVector? = null,
+    iconPosition: IconPosition = IconPosition.End,
 ) {
     Button(
         onClick = onClick,
@@ -59,171 +74,221 @@ fun PillButton(
             .height(56.dp),
         enabled = enabled && !isLoading,
         shape = RoundedCornerShape(28.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 2.dp,
+            disabledElevation = 0.dp,
+        ),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (enabled) OmiChatBlue else OmiChatBlue.copy(alpha = 0.5f),
-            contentColor = androidx.compose.ui.graphics.Color.White
-        )
+            contentColor = Color.White,
+        ),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (isLoading) {
-                androidx.compose.material3.CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = androidx.compose.ui.graphics.Color.White,
-                    strokeWidth = 3.dp
+            when {
+                isLoading -> CircularProgressIndicator(
+                    modifier = Modifier.size(22.dp),
+                    color = Color.White,
+                    strokeWidth = 2.5.dp,
                 )
-            } else {
-                if (icon != null && iconPosition == IconPosition.Start) {
-                    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp).padding(end = 8.dp))
-                }
-                Text(
-                    text = text,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = androidx.compose.ui.graphics.Color.White
-                )
-                if (icon != null && iconPosition == IconPosition.End) {
-                    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp).padding(start = 8.dp))
+
+                else -> {
+                    if (icon != null && iconPosition == IconPosition.Start) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = Color.White,
+                        )
+                    }
+                    Text(
+                        text = text,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White,
+                    )
+                    if (icon != null && iconPosition == IconPosition.End) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = Color.White,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-enum class IconPosition { Start, End }
-
-// Secondary Outlined Pill Button
+/**
+ * Secondary action.
+ *
+ * Uses a glass pane with a tinted rim rather than a flat outline, so it sits
+ * legibly on the mesh backdrop without competing with [PillButton].
+ */
 @Composable
 fun OutlinedPillButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null
+    icon: ImageVector? = null,
 ) {
+    val accent = OmiChatBlue
     Button(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(56.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp),
         enabled = enabled,
         shape = RoundedCornerShape(28.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = androidx.compose.ui.graphics.Color.Transparent,
-            contentColor = OmiChatBlue,
-            outlineColor = OmiChatBlue
+        contentPadding = PaddingValues(horizontal = 24.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = accent,
         ),
-        border = androidx.compose.ui.graphics.Outline.Border(2.dp, OmiChatBlue)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .glassPanel(
+                    shape = RoundedCornerShape(28.dp),
+                    level = GlassLevel.Thin,
+                    accent = accent.copy(alpha = 0.16f),
+                )
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            icon?.let {
-                Icon(imageVector = it, contentDescription = null, modifier = Modifier.size(20.dp).padding(end = 8.dp))
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = accent,
+                )
             }
             Text(
                 text = text,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = OmiChatBlue
+                color = accent,
             )
         }
     }
 }
 
-// Ghost/Text Button
+/** Ghost / text button. */
 @Composable
 fun TextButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     color: Color = OmiChatBlue,
-    fontSize: Int = 14
+    fontSize: Int = 14,
 ) {
-    androidx.compose.material3.TextButton(
+    MaterialTextButton(
         onClick = onClick,
         modifier = modifier,
-        colors = androidx.compose.material3.TextButtonDefaults.textButtonColors(
-            contentColor = color
-        )
+        colors = TextButtonDefaults.textButtonColors(contentColor = color),
     ) {
         Text(
             text = text,
             fontSize = fontSize.sp,
             fontWeight = FontWeight.Medium,
-            color = color
+            color = color,
         )
     }
 }
 
-// Filter Chip / Segmented Control
+/**
+ * Filter chip.
+ *
+ * Selected chips get a solid brand fill so the active filter is unambiguous;
+ * unselected chips are frosted, which keeps the row visually quiet.
+ */
 @Composable
 fun FilterChip(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(20.dp)
+
     Box(
         modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(
-                color = if (isSelected) OmiChatBlue else colors.surfaceContainerHighest,
-                shape = RoundedCornerShape(20.dp)
+            .padding(horizontal = 4.dp, vertical = 6.dp)
+            .then(
+                if (isSelected) {
+                    Modifier
+                        .glassPanel(shape = shape, level = GlassLevel.Thin, accent = OmiChatBlue)
+                        .border(1.dp, OmiChatBlue.copy(alpha = 0.6f), shape)
+                } else {
+                    Modifier.glassPanel(shape = shape, level = GlassLevel.Thin)
+                }
             )
-            .pointerInput(Unit) {
-                androidx.compose.foundation.gestures.detectTapGestures(onTap = onClick)
-            }
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = if (isSelected) androidx.compose.ui.graphics.Color.White else colors.onSurfaceVariant
+            color = if (isSelected) Color.White else colors.onSurfaceVariant,
         )
     }
 }
 
-// Icon Button with circular background
+/** Circular icon button on a frosted disc. */
 @Composable
 fun CircleIconButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Int = 40,
     backgroundColor: Color = OmiChatBlue.copy(alpha = 0.1f),
     iconColor: Color = OmiChatBlue,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    contentDescription: String? = null,
 ) {
     IconButton(
         onClick = onClick,
         modifier = modifier.size(size.dp),
         enabled = enabled,
-        colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+        colors = IconButtonDefaults.iconButtonColors(
             containerColor = if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.5f),
-            contentColor = if (enabled) iconColor else iconColor.copy(alpha = 0.5f)
-        )
+            contentColor = if (enabled) iconColor else iconColor.copy(alpha = 0.5f),
+        ),
     ) {
-        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            modifier = Modifier.size((size * 0.6f).toInt().dp),
+        )
     }
 }
 
-// Back Button for App Bar
+/** App-bar back affordance. */
 @Composable
 fun BackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     CircleIconButton(
         icon = Icons.Default.ArrowBack,
         onClick = onClick,
         modifier = modifier,
-        size = 40
+        size = 40,
+        contentDescription = "Back",
     )
 }
 
-// Input Field with label and optional trailing icon
+/** Text field on a frosted pane. */
 @Composable
 fun OutlinedInputField(
     value: String,
@@ -232,57 +297,95 @@ fun OutlinedInputField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     isError: Boolean = false,
-    trailingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    trailingIcon: ImageVector? = null,
     onTrailingIconClick: (() -> Unit)? = null,
-    visualTransformation: androidx.compose.ui.text.input.VisualTransformation? = null,
-    keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
+    visualTransformation: VisualTransformation? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     singleLine: Boolean = true,
-    maxLines: Int = 1
+    maxLines: Int = 1,
 ) {
-    val colors = OmiChatTheme.colorScheme
-    val interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
-    val isFocused = androidx.compose.foundation.focus.rememberFocusRequester()
+    val colors = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(16.dp)
+    val interactionSource = remember { MutableInteractionSource() }
 
-    androidx.compose.material3.OutlinedTextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        label = { Text(text = label, color = colors.onSurfaceVariant) },
-        placeholder = { Text(text = placeholder, color = colors.onSurfaceVariant.copy(alpha = 0.6f)) },
+        modifier = modifier
+            .fillMaxWidth()
+            .glassPanel(shape = shape, level = GlassLevel.Thin)
+            .padding(horizontal = 4.dp),
+        label = if (label.isNotEmpty()) {
+            {
+                Text(
+                    text = label,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp),
+                )
+            }
+        } else {
+            null
+        },
+        placeholder = {
+            Text(
+                text = placeholder,
+                color = colors.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.padding(start = 16.dp),
+            )
+        },
         singleLine = singleLine,
         maxLines = maxLines,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
-        colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
-            containerColor = colors.surface,
-            focusedContainerColor = colors.surface,
-            disabledContainerColor = colors.surfaceContainerHighest,
-            unfocusedContainerColor = colors.surface,
-            labelColor = colors.onSurfaceVariant,
+        interactionSource = interactionSource,
+        shape = shape,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            errorContainerColor = Color.Transparent,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            disabledBorderColor = Color.Transparent,
+            errorBorderColor = Color.Transparent,
+            focusedTextColor = colors.onSurface,
+            unfocusedTextColor = colors.onSurface,
             focusedLabelColor = OmiChatBlue,
-            placeholderColor = colors.onSurfaceVariant.copy(alpha = 0.6f),
-            textColor = colors.onSurface,
+            unfocusedLabelColor = colors.onSurfaceVariant,
+            focusedPlaceholderColor = colors.onSurfaceVariant.copy(alpha = 0.6f),
+            unfocusedPlaceholderColor = colors.onSurfaceVariant.copy(alpha = 0.6f),
             cursorColor = OmiChatBlue,
-            focusedBorderColor = OmiChatBlue,
-            unfocusedBorderColor = if (isError) colors.error else colors.outlineVariant,
-            disabledBorderColor = colors.outlineVariant,
-            errorColor = colors.error
+            focusedLeadingIconColor = OmiChatBlue,
+            unfocusedLeadingIconColor = colors.onSurfaceVariant,
+            focusedTrailingIconColor = OmiChatBlue,
+            unfocusedTrailingIconColor = colors.onSurfaceVariant,
         ),
-        shape = RoundedCornerShape(12.dp),
-        trailingIcon = trailingIcon?.let {
+        trailingIcon = if (trailingIcon != null) {
             {
                 IconButton(
-                    onClick = onTrailingIconClick!!,
-                    modifier = Modifier.padding(end = 8.dp)
+                    onClick = { onTrailingIconClick?.invoke() },
+                    modifier = Modifier.padding(end = 4.dp),
                 ) {
-                    Icon(imageVector = it, contentDescription = null, tint = colors.onSurfaceVariant)
+                    Icon(
+                        imageVector = trailingIcon,
+                        contentDescription = null,
+                        tint = colors.onSurfaceVariant,
+                    )
                 }
             }
-        }
+        } else {
+            null
+        },
     )
 }
 
-// Message Input Bar
+/**
+ * Composer bar.
+ *
+ * A floating frosted bar rather than an opaque strip: the message list scrolls
+ * underneath it and stays visible through the glass, which is what makes the
+ * effect read as depth rather than as a border.
+ */
 @Composable
 fun MessageInputBar(
     messageText: String,
@@ -290,68 +393,78 @@ fun MessageInputBar(
     onSend: () -> Unit,
     onAttach: () -> Unit,
     onMic: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val colors = OmiChatTheme.colorScheme
+    val colors = MaterialTheme.colorScheme
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .background(colors.surfaceContainer),
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .glassPanel(
+                shape = RoundedCornerShape(28.dp),
+                level = GlassLevel.Thick,
+            )
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         CircleIconButton(
             icon = Icons.Default.Add,
             onClick = onAttach,
             size = 44,
-            backgroundColor = colors.surfaceContainerHighest,
-            iconColor = colors.onSurfaceVariant
+            backgroundColor = Color.Transparent,
+            iconColor = colors.onSurfaceVariant,
+            contentDescription = "Attach",
         )
 
-        androidx.compose.foundation.layout.Box(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .weight(1f)
                 .height(48.dp)
-                .background(colors.surface, RoundedCornerShape(24.dp))
+                .glassPanel(
+                    shape = RoundedCornerShape(24.dp),
+                    level = GlassLevel.Thin,
+                )
+                .padding(horizontal = 16.dp),
         ) {
-            androidx.compose.material3.TextField(
+            TextField(
                 value = messageText,
                 onValueChange = onTextChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 0.dp),
-                placeholder = { Text("Type a message...", color = colors.onSurfaceVariant.copy(alpha = 0.6f)) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(
+                        text = "Message",
+                        color = colors.onSurfaceVariant.copy(alpha = 0.6f),
+                    )
+                },
                 singleLine = true,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Send),
-                colors = androidx.compose.material3.TextFieldDefaults.textFieldColors(
-                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    disabledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    textColor = colors.onSurface,
+                textStyle = TextStyle(
+                    color = colors.onSurface,
+                    fontSize = 16.sp,
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedTextColor = colors.onSurface,
+                    unfocusedTextColor = colors.onSurface,
                     cursorColor = OmiChatBlue,
-                    placeholderColor = colors.onSurfaceVariant.copy(alpha = 0.6f)
-                )
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                ),
             )
         }
 
-        if (messageText.isNotBlank()) {
-            CircleIconButton(
-                icon = Icons.Default.Send,
-                onClick = onSend,
-                size = 48,
-                backgroundColor = OmiChatBlue,
-                iconColor = androidx.compose.ui.graphics.Color.White
-            )
-        } else {
-            CircleIconButton(
-                icon = Icons.Default.Mic,
-                onClick = onMic,
-                size = 48,
-                backgroundColor = OmiChatBlue,
-                iconColor = androidx.compose.ui.graphics.Color.White
-            )
-        }
+        CircleIconButton(
+            icon = if (messageText.isNotBlank()) Icons.Default.Send else Icons.Default.Mic,
+            onClick = if (messageText.isNotBlank()) onSend else onMic,
+            size = 48,
+            backgroundColor = OmiChatBlue,
+            iconColor = Color.White,
+            contentDescription = if (messageText.isNotBlank()) "Send" else "Record voice message",
+        )
     }
 }

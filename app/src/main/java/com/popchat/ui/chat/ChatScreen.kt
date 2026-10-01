@@ -1,20 +1,24 @@
 package com.popchat.ui.chat
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -27,21 +31,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardOptions
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
-import com.popchat.ui.common.CircleIconButton
 import com.popchat.ui.common.MessageBubble
 import com.popchat.ui.common.MessageInputBar
-import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.common.MessageType
+import com.popchat.ui.theme.GlassLevel
 import com.popchat.ui.theme.OmiChatGreen
-import com.popchat.ui.theme.OmiChatTheme
-import kotlinx.coroutines.launch
+import com.popchat.ui.theme.glassPanel
+import kotlinx.datetime.Instant
 
 @Composable
 fun ChatScreen(
@@ -52,131 +53,131 @@ fun ChatScreen(
     onBack: () -> Unit,
     onCall: () -> Unit,
     onVideoCall: () -> Unit,
-    onMoreOptions: () -> Unit
+    onMoreOptions: () -> Unit,
+    messages: List<ChatMessage> = sampleMessages,
 ) {
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    val context = LocalContext.current
 
-    // Sample messages for demo
-    val messages by remember {
-        mutableStateOf(sampleMessages)
+    // Keep the newest message in view as the thread grows.
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.lastIndex)
+        }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
-    ) {
-        // Top App Bar
+    Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
+            modifier = Modifier.glassPanel(
+                shape = RoundedCornerShape(0.dp),
+                level = GlassLevel.Thick,
+            ),
             title = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Avatar(
                         imageUrl = chatAvatar,
                         name = chatName,
                         size = 40,
                         showOnlineIndicator = !isGroup,
-                        isOnline = isOnline
+                        isOnline = isOnline,
                     )
                     Column {
                         Text(
                             text = chatName,
                             fontSize = 16.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            overflow = androidx.compose.ui.text.TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
-                        if (!isGroup) {
-                            Text(
-                                text = if (isOnline) "Online" else "Offline",
-                                fontSize = 12.sp,
-                                color = if (isOnline) OmiChatGreen else OmiChatTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else {
-                            Text(
-                                text = "Group • 5 members",
-                                fontSize = 12.sp,
-                                color = PopChatTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = if (isGroup) "Group \u2022 5 members" else if (isOnline) "Online" else "Offline",
+                            fontSize = 12.sp,
+                            color = if (isOnline && !isGroup) {
+                                OmiChatGreen
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
                     }
                 }
             },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             },
             actions = {
                 IconButton(onClick = onCall) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Call,
+                        imageVector = Icons.Default.Call,
                         contentDescription = "Voice call",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 IconButton(onClick = onVideoCall) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Videocam,
+                        imageVector = Icons.Default.Videocam,
                         contentDescription = "Video call",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 IconButton(onClick = onMoreOptions) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
+                        imageVector = Icons.Default.MoreVert,
                         contentDescription = "More options",
-                        tint = OmiChatTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
-            )
+                containerColor = Color.Transparent,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
         )
 
-        // Messages List
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 8.dp),
+                .fillMaxWidth()
+                .weight(1f),
             state = listState,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            reverseLayout = false
+            contentPadding = PaddingValues(vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            items(messages) { message ->
+            items(messages, key = { it.id }) { message ->
                 MessageBubble(
-                    message = message,
+                    content = message.content,
+                    type = message.type,
+                    mediaUrl = message.mediaUrl,
                     isCurrentUser = message.isCurrentUser,
+                    isRead = message.isRead,
+                    timestamp = message.timestamp,
                     showAvatar = true,
                     showName = !message.isCurrentUser && isGroup,
-                    senderName = message.senderName
+                    senderName = message.senderName,
                 )
             }
         }
 
-        // Message Input Bar
         MessageInputBar(
             messageText = messageText,
             onTextChange = { messageText = it },
             onSend = {
-                if (messageText.isNotBlank()) {
-                    // Add message to list
-                    // In real app, this would call ViewModel
-                    messageText = ""
-                }
+                // In production this hands the draft to ChatDetailViewModel,
+                // which writes to Room first and syncs to Supabase after.
+                if (messageText.isNotBlank()) messageText = ""
             },
-            onAttach = { /* Open attachment picker */ },
+            onAttach = { /* Open the attachment picker */ },
             onMic = { /* Start voice recording */ },
-            modifier = Modifier.padding(bottom = 0.dp)
         )
     }
 }
@@ -187,67 +188,67 @@ data class ChatMessage(
     val type: String,
     val isCurrentUser: Boolean,
     val senderName: String,
-    val timestamp: kotlinx.datetime.Instant = kotlinx.datetime.Instant.now(),
+    val timestamp: Instant = Instant.now(),
     val mediaUrl: String? = null,
-    val isRead: Boolean = true
+    val isRead: Boolean = true,
 )
 
 val sampleMessages = listOf(
     ChatMessage(
         id = "1",
         content = "Hey! How are you doing?",
-        type = "text",
+        type = MessageType.TEXT,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3600)
+        timestamp = Instant.now().minusSeconds(3600),
     ),
     ChatMessage(
         id = "2",
-        content = "I'm doing great! Thanks for asking 😊",
-        type = "text",
+        content = "I'm doing great! Thanks for asking \uD83D\uDE0A",
+        type = MessageType.TEXT,
         isCurrentUser = true,
         senderName = "You",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3500)
+        timestamp = Instant.now().minusSeconds(3500),
     ),
     ChatMessage(
         id = "3",
         content = "Did you see the new design mockups?",
-        type = "text",
+        type = MessageType.TEXT,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3400)
+        timestamp = Instant.now().minusSeconds(3400),
     ),
     ChatMessage(
         id = "4",
         content = "Yes, they look amazing! Love the new color scheme.",
-        type = "text",
+        type = MessageType.TEXT,
         isCurrentUser = true,
         senderName = "You",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3300)
+        timestamp = Instant.now().minusSeconds(3300),
     ),
     ChatMessage(
         id = "5",
         content = "",
-        type = "image",
+        type = MessageType.IMAGE,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3200),
-        mediaUrl = "https://picsum.photos/400/300"
+        timestamp = Instant.now().minusSeconds(3200),
+        mediaUrl = "https://picsum.photos/400/300",
     ),
     ChatMessage(
         id = "6",
         content = "That's the one! What do you think?",
-        type = "text",
+        type = MessageType.TEXT,
         isCurrentUser = false,
         senderName = "Riya",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3100)
+        timestamp = Instant.now().minusSeconds(3100),
     ),
     ChatMessage(
         id = "7",
-        content = "Perfect! The blue accent really pops ✨",
-        type = "text",
+        content = "Perfect! The blue accent really pops \u2728",
+        type = MessageType.TEXT,
         isCurrentUser = true,
         senderName = "You",
-        timestamp = kotlinx.datetime.Instant.now().minusSeconds(3000)
-    )
+        timestamp = Instant.now().minusSeconds(3000),
+    ),
 )
