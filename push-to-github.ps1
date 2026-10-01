@@ -1,14 +1,14 @@
 #!/usr/bin/env pwsh
 
-# Push Omi Chat to GitHub (PowerShell version)
-# Repository: https://github.com/vortexapps67/Omi-Chat
+# Push Pop Chat to GitHub (PowerShell version)
+# Repository: https://github.com/vortexapps67/Pop-Chat
 
 param(
     [string]$Branch = "main",
-    [string]$RepoUrl = "https://github.com/vortexapps67/Omi-Chat.git"
+    [string]$RepoUrl = "https://github.com/vortexapps67/Pop-Chat.git"
 )
 
-Write-Host "🚀 Pushing Omi Chat to GitHub..." -ForegroundColor Green
+Write-Host "🚀 Pushing Pop Chat to GitHub..." -ForegroundColor Green
 Write-Host "Repository: $RepoUrl" -ForegroundColor Cyan
 Write-Host "Branch: $Branch" -ForegroundColor Cyan
 Write-Host ""
@@ -45,7 +45,7 @@ if (-not $status) {
 } else {
     Write-Host "💾 Committing changes..." -ForegroundColor Yellow
     $commitMessage = @"
-feat: Initial Omi Chat Android app with Supabase backend
+feat: Initial Pop Chat Android app with Supabase backend
 
 - Kotlin + Jetpack Compose + Hilt + Room + Supabase
 - Onboarding, Auth (Login/Register), Chat List, Chat Detail
@@ -64,7 +64,7 @@ git push -u origin $Branch --force
 
 Write-Host ""
 Write-Host "✅ Successfully pushed to GitHub!" -ForegroundColor Green
-Write-Host "🔗 Repository: https://github.com/vortexapps67/Omi-Chat" -ForegroundColor Cyan
+Write-Host "🔗 Repository: https://github.com/vortexapps67/Pop-Chat" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📋 Next steps:" -ForegroundColor Yellow
 Write-Host "1. Go to GitHub repository settings" -ForegroundColor White
