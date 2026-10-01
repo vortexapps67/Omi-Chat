@@ -1,0 +1,89 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+build/
+
+# Gradle files
+.gradle/
+build/
+local.properties
+local.properties.template
+
+# Environment files (contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Signing files
+*.keystore
+*.jks
+*.key
+signing.properties
+keystore.properties
+keystore.properties.template
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+.vscode/
+*.vscode
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kotlin
+*.kt.bak
+
+# Logs
+*.log
+
+# Test reports
+reports/
+test-results/
+
+# Firebase
+google-services.json
+google-services.json.template
+
+# Supabase
+supabase.properties
+
+# Release
+release/
+
+# External native build
+.externalNativeBuild/
+.cxx/
+
+# Captures
+captures/
+
+# Coverage reports
+*.ec
+coverage/
+*.html
+*.xml
+
+# Jetpack Compose
+compose/
+
+# Android Studio
+*.hprof
