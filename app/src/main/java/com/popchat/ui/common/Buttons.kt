@@ -36,10 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatBlueContainer
-import com.popchat.ui.theme.PopChatGreen
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatBlueContainer
+import com.popchat.ui.theme.OmiChatGreen
+import com.popchat.ui.theme.OmiChatTheme
 
 // Primary Pill Button - Main CTA
 @Composable
@@ -60,7 +60,7 @@ fun PillButton(
         enabled = enabled && !isLoading,
         shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (enabled) PopChatBlue else PopChatBlue.copy(alpha = 0.5f),
+            containerColor = if (enabled) OmiChatBlue else OmiChatBlue.copy(alpha = 0.5f),
             contentColor = androidx.compose.ui.graphics.Color.White
         )
     ) {
@@ -111,10 +111,10 @@ fun OutlinedPillButton(
         shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = androidx.compose.ui.graphics.Color.Transparent,
-            contentColor = PopChatBlue,
-            outlineColor = PopChatBlue
+            contentColor = OmiChatBlue,
+            outlineColor = OmiChatBlue
         ),
-        border = androidx.compose.ui.graphics.Outline.Border(2.dp, PopChatBlue)
+        border = androidx.compose.ui.graphics.Outline.Border(2.dp, OmiChatBlue)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -128,7 +128,7 @@ fun OutlinedPillButton(
                 text = text,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = PopChatBlue
+                color = OmiChatBlue
             )
         }
     }
@@ -140,7 +140,7 @@ fun TextButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = PopChatBlue,
+    color: Color = OmiChatBlue,
     fontSize: Int = 14
 ) {
     androidx.compose.material3.TextButton(
@@ -167,12 +167,12 @@ fun FilterChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Box(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .background(
-                color = if (isSelected) PopChatBlue else colors.surfaceContainerHighest,
+                color = if (isSelected) OmiChatBlue else colors.surfaceContainerHighest,
                 shape = RoundedCornerShape(20.dp)
             )
             .pointerInput(Unit) {
@@ -195,8 +195,8 @@ fun CircleIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Int = 40,
-    backgroundColor: Color = PopChatBlue.copy(alpha = 0.1f),
-    iconColor: Color = PopChatBlue,
+    backgroundColor: Color = OmiChatBlue.copy(alpha = 0.1f),
+    iconColor: Color = OmiChatBlue,
     enabled: Boolean = true
 ) {
     IconButton(
@@ -239,7 +239,7 @@ fun OutlinedInputField(
     singleLine: Boolean = true,
     maxLines: Int = 1
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     val interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource()
     val isFocused = androidx.compose.foundation.focus.rememberFocusRequester()
 
@@ -259,11 +259,11 @@ fun OutlinedInputField(
             disabledContainerColor = colors.surfaceContainerHighest,
             unfocusedContainerColor = colors.surface,
             labelColor = colors.onSurfaceVariant,
-            focusedLabelColor = PopChatBlue,
+            focusedLabelColor = OmiChatBlue,
             placeholderColor = colors.onSurfaceVariant.copy(alpha = 0.6f),
             textColor = colors.onSurface,
-            cursorColor = PopChatBlue,
-            focusedBorderColor = PopChatBlue,
+            cursorColor = OmiChatBlue,
+            focusedBorderColor = OmiChatBlue,
             unfocusedBorderColor = if (isError) colors.error else colors.outlineVariant,
             disabledBorderColor = colors.outlineVariant,
             errorColor = colors.error
@@ -292,7 +292,7 @@ fun MessageInputBar(
     onMic: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -330,7 +330,7 @@ fun MessageInputBar(
                     unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
                     disabledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
                     textColor = colors.onSurface,
-                    cursorColor = PopChatBlue,
+                    cursorColor = OmiChatBlue,
                     placeholderColor = colors.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             )
@@ -341,7 +341,7 @@ fun MessageInputBar(
                 icon = Icons.Default.Send,
                 onClick = onSend,
                 size = 48,
-                backgroundColor = PopChatBlue,
+                backgroundColor = OmiChatBlue,
                 iconColor = androidx.compose.ui.graphics.Color.White
             )
         } else {
@@ -349,7 +349,7 @@ fun MessageInputBar(
                 icon = Icons.Default.Mic,
                 onClick = onMic,
                 size = 48,
-                backgroundColor = PopChatBlue,
+                backgroundColor = OmiChatBlue,
                 iconColor = androidx.compose.ui.graphics.Color.White
             )
         }

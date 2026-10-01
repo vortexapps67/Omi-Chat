@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Push Pop Chat to GitHub
-# Repository: https://github.com/vortexapps67/Pop-Chat
+# Push Omi Chat to GitHub
+# Repository: https://github.com/vortexapps67/Omi-Chat
 
 set -e
 
-REPO_URL="https://github.com/vortexapps67/Pop-Chat.git"
+REPO_URL="https://github.com/vortexapps67/Omi-Chat.git"
 BRANCH="main"
 
-echo "🚀 Pushing Pop Chat to GitHub..."
+echo "🚀 Pushing Omi Chat to GitHub..."
 echo "Repository: $REPO_URL"
 echo "Branch: $BRANCH"
 echo ""
@@ -38,7 +38,7 @@ if git diff --cached --quiet; then
     echo "⚠️  No changes to commit"
 else
     echo "💾 Committing changes..."
-    git commit -m "feat: Initial Pop Chat Android app with Supabase backend
+    git commit -m "feat: Initial Omi Chat Android app with Supabase backend
 
 - Kotlin + Jetpack Compose + Hilt + Room + Supabase
 - Onboarding, Auth (Login/Register), Chat List, Chat Detail
@@ -55,7 +55,7 @@ git push -u origin $BRANCH --force
 
 echo ""
 echo "✅ Successfully pushed to GitHub!"
-echo "🔗 Repository: https://github.com/vortexapps67/Pop-Chat"
+echo "🔗 Repository: https://github.com/vortexapps67/Omi-Chat"
 echo ""
 echo "📋 Next steps:"
 echo "1. Go to GitHub repository settings"

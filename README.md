@@ -1,6 +1,6 @@
-# Pop Chat - Modern Android Messaging App
+# Omi Chat - Modern Android Messaging App
 
-A feature-rich, modern Android messaging application built with **Kotlin**, **Jetpack Compose**, **Hilt**, **Room**, and **Supabase**. Designed following Material 3 guidelines with a custom "PopChat" design system.
+A feature-rich, modern Android messaging application built with **Kotlin**, **Jetpack Compose**, **Hilt**, **Room**, and **Supabase**. Designed following Material 3 guidelines with a custom "OmiChat" design system.
 
 ## 🎨 Design System
 
@@ -110,7 +110,7 @@ app/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/vortexapps67/Pop-Chat.git
+   git clone https://github.com/vortexapps67/Omi-Chat.git
    cd Pop-Chat
    ```
 
@@ -169,7 +169,7 @@ Go to **Repository Settings → Secrets and variables → Actions** and add:
 | `SUPABASE_JWKS_URL` | Supabase JWKS endpoint |
 | `KEYSTORE_BASE64` | Base64-encoded release keystore (from `generate-keystore.sh`) |
 | `KEYSTORE_PASSWORD` | Keystore password |
-| `KEY_ALIAS` | Key alias (default: `popchat-release-key`) |
+| `KEY_ALIAS` | Key alias (default: `omichat-release-key`) |
 | `KEY_PASSWORD` | Key password |
 
 #### Triggering a Release
@@ -277,7 +277,7 @@ Enable Supabase Realtime on `messages` and `chats` tables for live updates.
 ## 📄 License
 
 ```
-Copyright 2024 Pop Chat
+Copyright 2024 Omi Chat
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

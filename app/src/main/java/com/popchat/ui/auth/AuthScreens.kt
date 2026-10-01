@@ -33,8 +33,8 @@ import com.popchat.ui.common.OutlinedInputField
 import com.popchat.ui.common.OutlinedPillButton
 import com.popchat.ui.common.PillButton
 import com.popchat.ui.common.TextButton
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun LoginScreen(
@@ -79,13 +79,13 @@ fun LoginScreen(
                 text = "Welcome Back",
                 fontSize = 28.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = PopChatTheme.colorScheme.onSurface
+                color = OmiChatTheme.colorScheme.onSurface
             )
 
             Text(
-                text = "Sign in to continue to Pop Chat",
+                text = "Sign in to continue to Omi Chat",
                 fontSize = 16.sp,
-                color = PopChatTheme.colorScheme.onSurfaceVariant
+                color = OmiChatTheme.colorScheme.onSurfaceVariant
             )
 
             // Email/Username field
@@ -125,7 +125,7 @@ fun LoginScreen(
                 TextButton(
                     text = "Forgot password?",
                     onClick = onForgotPassword,
-                    color = PopChatBlue
+                    color = OmiChatBlue
                 )
             }
 
@@ -147,15 +147,15 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.weight(1f).height(1.dp).background(PopChatTheme.colorScheme.outlineVariant)
+                    modifier = Modifier.weight(1f).height(1.dp).background(OmiChatTheme.colorScheme.outlineVariant)
                 )
                 Text(
                     text = "or",
                     fontSize = 14.sp,
-                    color = PopChatTheme.colorScheme.onSurfaceVariant
+                    color = OmiChatTheme.colorScheme.onSurfaceVariant
                 )
                 androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.weight(1f).height(1.dp).background(PopChatTheme.colorScheme.outlineVariant)
+                    modifier = Modifier.weight(1f).height(1.dp).background(OmiChatTheme.colorScheme.outlineVariant)
                 )
             }
 
@@ -175,12 +175,12 @@ fun LoginScreen(
                 Text(
                     text = "Don't have an account? ",
                     fontSize = 14.sp,
-                    color = PopChatTheme.colorScheme.onSurfaceVariant
+                    color = OmiChatTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(
                     text = "Sign Up",
                     onClick = onSignUpClick,
-                    color = PopChatBlue
+                    color = OmiChatBlue
                 )
             }
         }
@@ -230,13 +230,13 @@ fun RegisterScreen(
                 text = "Create Account",
                 fontSize = 28.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = PopChatTheme.colorScheme.onSurface
+                color = OmiChatTheme.colorScheme.onSurface
             )
 
             Text(
-                text = "Join Pop Chat today",
+                text = "Join Omi Chat today",
                 fontSize = 16.sp,
-                color = PopChatTheme.colorScheme.onSurfaceVariant
+                color = OmiChatTheme.colorScheme.onSurfaceVariant
             )
 
             // Full Name / Username
@@ -296,15 +296,15 @@ fun RegisterScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.weight(1f).height(1.dp).background(PopChatTheme.colorScheme.outlineVariant)
+                    modifier = Modifier.weight(1f).height(1.dp).background(OmiChatTheme.colorScheme.outlineVariant)
                 )
                 Text(
                     text = "or",
                     fontSize = 14.sp,
-                    color = PopChatTheme.colorScheme.onSurfaceVariant
+                    color = OmiChatTheme.colorScheme.onSurfaceVariant
                 )
                 androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.weight(1f).height(1.dp).background(PopChatTheme.colorScheme.outlineVariant)
+                    modifier = Modifier.weight(1f).height(1.dp).background(OmiChatTheme.colorScheme.outlineVariant)
                 )
             }
 
@@ -323,12 +323,12 @@ fun RegisterScreen(
                 Text(
                     text = "Already have an account? ",
                     fontSize = 14.sp,
-                    color = PopChatTheme.colorScheme.onSurfaceVariant
+                    color = OmiChatTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(
                     text = "Log In",
                     onClick = onLoginClick,
-                    color = PopChatBlue
+                    color = OmiChatBlue
                 )
             }
         }
@@ -344,10 +344,10 @@ fun LogoMark() {
         Box(
             modifier = Modifier
                 .size(56.dp)
-                .background(PopChatBlue, androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatBlue, androidx.compose.ui.graphics.CircleShape)
         ) {
             Text(
-                text = "pop",
+                text = "omi",
                 fontSize = 18.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = androidx.compose.ui.graphics.Color.White
@@ -365,14 +365,14 @@ fun AuthCallbackScreen() {
     ) {
         androidx.compose.material3.CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = PopChatBlue,
+            color = OmiChatBlue,
             strokeWidth = 4.dp
         )
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(top = 16.dp))
         Text(
             text = "Completing sign in...",
             fontSize = 16.sp,
-            color = PopChatTheme.colorScheme.onSurfaceVariant
+            color = OmiChatTheme.colorScheme.onSurfaceVariant
         )
     }
 }

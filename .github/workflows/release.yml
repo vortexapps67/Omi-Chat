@@ -86,25 +86,25 @@ jobs:
           
           # Find and rename APK
           find app/build/outputs/apk/release -name "*.apk" | while read apk; do
-            new_name="popchat-${VERSION}-$(basename "$apk")"
-            cp "$apk" "popchat-${VERSION}-$(basename "$apk")"
+            new_name="omichat-${VERSION}-$(basename "$apk")"
+            cp "$apk" "omichat-${VERSION}-$(basename "$apk")"
             echo "APK_PATH=$PWD/$new_name" >> $GITHUB_ENV
           done
           
           # Also copy AAB
           find app/build/outputs/bundle/release -name "*.aab" | while read aab; do
-            new_name="popchat-${VERSION}-$(basename "$aab")"
-            cp "$aab" "popchat-${VERSION}-$(basename "$aab")"
+            new_name="omichat-${VERSION}-$(basename "$aab")"
+            cp "$aab" "omichat-${VERSION}-$(basename "$aab")"
             echo "AAB_PATH=$PWD/$new_name" >> $GITHUB_ENV
           done
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: popchat-release-apk
+          name: omichat-release-apk
           path: |
-            popchat-*.apk
-            popchat-*.aab
+            omichat-*.apk
+            omichat-*.aab
           retention-days: 30
 
       - name: Create Release
@@ -112,9 +112,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           tag_name: ${{ github.ref_name }}
-          name: Pop Chat ${{ github.ref_name }}
+          name: Omi Chat ${{ github.ref_name }}
           body: |
-            ## Pop Chat ${{ github.ref_name }}
+            ## Omi Chat ${{ github.ref_name }}
             
             ### Changes
             - See commit history for details
@@ -134,8 +134,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            popchat-*.apk
-            popchat-*.aab
+            omichat-*.apk
+            omichat-*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -144,9 +144,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         with:
           tag_name: v${{ github.event.inputs.version }}
-          name: Pop Chat v${{ github.event.inputs.version }}
+          name: Omi Chat v${{ github.event.inputs.version }}
           body: |
-            ## Pop Chat v${{ github.event.inputs.version }}
+            ## Omi Chat v${{ github.event.inputs.version }}
             
             ### Downloads
             - **Universal APK**: Install on any Android device (API 26+)
@@ -159,8 +159,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            popchat-*.apk
-            popchat-*.aab
+            omichat-*.apk
+            omichat-*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -203,7 +203,7 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: popchat-debug-apk
+          name: omichat-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
 

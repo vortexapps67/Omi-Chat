@@ -18,14 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.popchat.ui.theme.Theme.PopChatTheme
+import com.popchat.ui.theme.Theme.OmiChatTheme
 import kotlinx.coroutines.launch
 
 class AuthCallbackActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PopChatTheme {
+            OmiChatTheme {
                 AuthCallbackScreen()
             }
         }

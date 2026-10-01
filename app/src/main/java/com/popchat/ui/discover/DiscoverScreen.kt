@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.PillButton
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun DiscoverScreen(
@@ -59,7 +59,7 @@ fun DiscoverScreen(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             ),
             actions = {
                 androidx.compose.material3.IconButton(onClick = { /* Search */ }) {
@@ -102,12 +102,12 @@ fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Box(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .background(
-                color = if (isSelected) PopChatBlue else colors.surfaceContainerHighest,
+                color = if (isSelected) OmiChatBlue else colors.surfaceContainerHighest,
                 shape = androidx.compose.ui.graphics.RoundedCornerShape(20.dp)
             )
             .pointerInput(Unit) {
@@ -140,7 +140,7 @@ fun PeopleGrid() {
 
 @Composable
 fun PersonCard(person: Person) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,7 +174,7 @@ fun PersonCard(person: Person) {
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.Verified,
                         contentDescription = "Verified",
-                        tint = PopChatBlue,
+                        tint = OmiChatBlue,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -211,7 +211,7 @@ fun GroupsList() {
 
 @Composable
 fun GroupCard(group: Group) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     androidx.compose.material3.ListItem(
         modifier = Modifier
             .fillMaxWidth()
@@ -271,7 +271,7 @@ fun ChannelsList() {
 
 @Composable
 fun ChannelCard(channel: Channel) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     androidx.compose.material3.ListItem(
         modifier = Modifier
             .fillMaxWidth()
@@ -295,7 +295,7 @@ fun ChannelCard(channel: Channel) {
                     Text(text = channel.name, fontWeight = FontWeight.Medium)
                     Badge(
                         badgeContent = { Text(text = channel.category, fontSize = 10.sp, color = colors.onPrimaryContainer) },
-                        backgroundColor = PopChatBlue.copy(alpha = 0.2f)
+                        backgroundColor = OmiChatBlue.copy(alpha = 0.2f)
                     ) { Box() }
                 }
                 Text(text = channel.description, fontSize = 12.sp, color = colors.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.TextOverflow.Ellipsis)

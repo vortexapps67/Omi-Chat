@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.FilterChip
 import com.popchat.ui.common.OutlinedInputField
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun ChatListScreen(
@@ -59,15 +59,15 @@ fun ChatListScreen(
                     LogoMark()
                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Pop Chat",
+                        text = "Omi Chat",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PopChatTheme.colorScheme.onSurface
+                        color = OmiChatTheme.colorScheme.onSurface
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             ),
             actions = {
                 // Search
@@ -75,7 +75,7 @@ fun ChatListScreen(
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
                 // New chat
@@ -83,7 +83,7 @@ fun ChatListScreen(
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.ChatBubbleOutline,
                         contentDescription = "New chat",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
                 // More options
@@ -91,7 +91,7 @@ fun ChatListScreen(
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
                         contentDescription = "More options",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -144,7 +144,7 @@ fun ChatListScreen(
                 )
                 androidx.compose.material3.Divider(
                     modifier = Modifier.padding(start = 72.dp),
-                    color = PopChatTheme.colorScheme.outlineVariant,
+                    color = OmiChatTheme.colorScheme.outlineVariant,
                     thickness = 0.5.dp
                 )
             }
@@ -157,7 +157,7 @@ fun ChatListItem(
     chat: ChatItem,
     onClick: () -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     val time = formatTime(chat.timestamp)
 
     androidx.compose.material3.ListItem(
@@ -215,7 +215,7 @@ fun ChatListItem(
                                     color = colors.onErrorContainer
                                 )
                             },
-                            backgroundColor = PopChatBlue,
+                            backgroundColor = OmiChatBlue,
                             modifier = Modifier.padding(start = 8.dp)
                         ) {
                             androidx.compose.foundation.layout.Box()
@@ -237,7 +237,7 @@ fun ChatListItem(
                 Icon(
                     imageVector = androidx.compose.material.icons.Icons.Default.PushPin,
                     contentDescription = "Pinned",
-                    tint = PopChatBlue,
+                    tint = OmiChatBlue,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
@@ -336,10 +336,10 @@ fun LogoMark() {
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(PopChatBlue, androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatBlue, androidx.compose.ui.graphics.CircleShape)
         ) {
             Text(
-                text = "pop",
+                text = "omi",
                 fontSize = 12.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = androidx.compose.ui.graphics.Color.White

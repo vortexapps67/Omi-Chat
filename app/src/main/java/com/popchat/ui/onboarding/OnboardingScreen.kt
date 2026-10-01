@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.PillButton
 import com.popchat.ui.common.OutlinedPillButton
 import com.popchat.ui.common.TextButton
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatGreen
-import com.popchat.ui.theme.PopChatTheme
-import com.popchat.ui.theme.PopChatYellow
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatGreen
+import com.popchat.ui.theme.OmiChatTheme
+import com.popchat.ui.theme.OmiChatYellow
 
 @Composable
 fun OnboardingScreen(
@@ -77,7 +77,7 @@ fun OnboardingScreen(
                         modifier = Modifier
                             .size(if (index == currentPage) 24.dp else 8.dp, 8.dp)
                             .background(
-                                color = if (index == currentPage) PopChatBlue else PopChatBlue.copy(alpha = 0.3f),
+                                color = if (index == currentPage) OmiChatBlue else OmiChatBlue.copy(alpha = 0.3f),
                                 shape = androidx.compose.ui.graphics.RoundedCornerShape(4.dp)
                             )
                             .animateContentSize()
@@ -132,7 +132,7 @@ fun OnboardingPage(
                 text = "Skip",
                 onClick = { /* Skip onboarding */ },
                 modifier = Modifier.padding(24.dp),
-                color = PopChatTheme.colorScheme.onSurfaceVariant
+                color = OmiChatTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -146,7 +146,7 @@ fun OnboardingPage(
             text = title,
             fontSize = 28.sp,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            color = PopChatTheme.colorScheme.onSurface,
+            color = OmiChatTheme.colorScheme.onSurface,
             textAlign = androidx.compose.ui.text.TextAlign.Center,
             modifier = Modifier.padding(horizontal = 32.dp)
         )
@@ -157,7 +157,7 @@ fun OnboardingPage(
         Text(
             text = subtitle,
             fontSize = 16.sp,
-            color = PopChatTheme.colorScheme.onSurfaceVariant,
+            color = OmiChatTheme.colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.TextAlign.Center,
             modifier = Modifier.padding(horizontal = 32.dp),
             lineHeight = 24.sp
@@ -178,18 +178,18 @@ fun DefaultIllustration() {
         Box(
             modifier = Modifier
                 .size(200.dp)
-                .background(PopChatBlue.copy(alpha = 0.1f), androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatBlue.copy(alpha = 0.1f), androidx.compose.ui.graphics.CircleShape)
         )
         
         // Main "pop" bubble
         Box(
             modifier = Modifier
                 .size(140.dp)
-                .background(PopChatBlue, androidx.compose.ui.graphics.CircleShape),
+                .background(OmiChatBlue, androidx.compose.ui.graphics.CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "pop",
+                text = "omi",
                 fontSize = 36.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = androidx.compose.ui.graphics.Color.White
@@ -200,19 +200,19 @@ fun DefaultIllustration() {
         Box(
             modifier = Modifier
                 .size(50.dp)
-                .background(PopChatGreen, androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatGreen, androidx.compose.ui.graphics.CircleShape)
                 .offset(x = 80.dp, y = -40.dp)
         )
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(PopChatYellow, androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatYellow, androidx.compose.ui.graphics.CircleShape)
                 .offset(x = -70.dp, y = 50.dp)
         )
         Box(
             modifier = Modifier
                 .size(35.dp)
-                .background(PopChatBlue.copy(alpha = 0.7f), androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatBlue.copy(alpha = 0.7f), androidx.compose.ui.graphics.CircleShape)
                 .offset(x = 60.dp, y = 70.dp)
         )
     }
@@ -255,9 +255,9 @@ fun PeopleIllustration() {
                     .size(100.dp)
                     .background(
                         color = when (index % 3) {
-                            0 -> PopChatBlue
-                            1 -> PopChatGreen
-                            else -> PopChatYellow
+                            0 -> OmiChatBlue
+                            1 -> OmiChatGreen
+                            else -> OmiChatYellow
                         },
                         shape = androidx.compose.ui.graphics.CircleShape
                     )
@@ -281,21 +281,21 @@ fun SecureIllustration() {
         Box(
             modifier = Modifier
                 .size(160.dp)
-                .background(PopChatBlue.copy(alpha = 0.1f), androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatBlue.copy(alpha = 0.1f), androidx.compose.ui.graphics.CircleShape)
         )
         
         androidx.compose.material3.Icon(
             imageVector = androidx.compose.material.icons.Icons.Default.Shield,
             contentDescription = "Security",
             modifier = Modifier.size(80.dp),
-            tint = PopChatBlue
+            tint = OmiChatBlue
         )
         
         // Check mark
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(PopChatGreen, androidx.compose.ui.graphics.CircleShape)
+                .background(OmiChatGreen, androidx.compose.ui.graphics.CircleShape)
                 .offset(x = 60.dp, y = 60.dp)
         ) {
             androidx.compose.material3.Icon(

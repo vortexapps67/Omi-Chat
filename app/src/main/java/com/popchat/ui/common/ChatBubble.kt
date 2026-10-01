@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.data.model.MessageEntity
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatBlueContainer
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatBlueContainer
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun MessageBubble(
@@ -36,7 +36,7 @@ fun MessageBubble(
     onLongClick: (() -> Unit)? = null,
     onReplyClick: (() -> Unit)? = null
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     val time = formatMessageTime(message.createdAt)
 
     Row(
@@ -79,7 +79,7 @@ fun MessageBubble(
                 modifier = Modifier
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .background(
-                        color = if (isCurrentUser) PopChatBlue else colors.surfaceContainerHighest,
+                        color = if (isCurrentUser) OmiChatBlue else colors.surfaceContainerHighest,
                         shape = RoundedCornerShape(
                             topStart = 16.dp,
                             topEnd = 16.dp,
@@ -169,7 +169,7 @@ fun MessageBubble(
                     androidx.compose.material3.Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.DoneAll,
                         contentDescription = "Read",
-                        tint = if (message.readAt != null) PopChatBlue else colors.onPrimary.copy(alpha = 0.7f),
+                        tint = if (message.readAt != null) OmiChatBlue else colors.onPrimary.copy(alpha = 0.7f),
                         modifier = Modifier.size(14.dp)
                     )
                 }
@@ -195,7 +195,7 @@ private fun formatMessageTime(instant: kotlinx.datetime.Instant): String {
 // Date separator in chat
 @Composable
 fun DateSeparator(dateText: String) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     androidx.compose.foundation.layout.Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -221,7 +221,7 @@ fun DateSeparator(dateText: String) {
 // Typing indicator
 @Composable
 fun TypingIndicator(modifier: Modifier = Modifier) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Row(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp),

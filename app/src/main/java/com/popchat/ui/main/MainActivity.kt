@@ -23,7 +23,7 @@ import com.popchat.ui.media.SharedMediaScreen
 import com.popchat.ui.onboarding.OnboardingScreen
 import com.popchat.ui.profile.ProfileScreen
 import com.popchat.ui.settings.SettingsScreen
-import com.popchat.ui.theme.Theme.PopChatTheme
+import com.popchat.ui.theme.Theme.OmiChatTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PopChatTheme {
+            OmiChatTheme {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -182,9 +182,9 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
 
     androidx.compose.material3.BottomNavigation(
         modifier = androidx.compose.foundation.layout.Modifier.fillMaxWidth(),
-        backgroundColor = PopChatTheme.colorScheme.surfaceContainerLow,
-        containerColor = PopChatTheme.colorScheme.surfaceContainerLow,
-        contentColor = PopChatTheme.colorScheme.onSurface
+        backgroundColor = OmiChatTheme.colorScheme.surfaceContainerLow,
+        containerColor = OmiChatTheme.colorScheme.surfaceContainerLow,
+        contentColor = OmiChatTheme.colorScheme.onSurface
     ) {
         items.forEach { item ->
             val isSelected = currentDestination?.startsWith(item.route) == true
@@ -193,7 +193,7 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
                     Icon(
                         imageVector = if (isSelected) item.selectedIcon else item.icon,
                         contentDescription = item.label,
-                        tint = if (isSelected) PopChatTheme.colorScheme.primary else PopChatTheme.colorScheme.onSurfaceVariant
+                        tint = if (isSelected) OmiChatTheme.colorScheme.primary else OmiChatTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 label = { Text(text = item.label, fontSize = 12.sp) },

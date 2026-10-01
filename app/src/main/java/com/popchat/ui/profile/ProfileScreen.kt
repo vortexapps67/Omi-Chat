@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.OutlinedPillButton
 import com.popchat.ui.common.PillButton
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatGreen
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatGreen
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun ProfileScreen(
@@ -55,7 +55,7 @@ fun ProfileScreen(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             )
         )
 
@@ -94,7 +94,7 @@ fun ProfileScreen(
                     title = "Support",
                     items = listOf(
                         SettingsItem("Help & Support", androidx.compose.material.icons.Icons.Default.Help) { onSettingsClick("help") },
-                        SettingsItem("About Pop Chat", androidx.compose.material.icons.Icons.Default.Info) { onSettingsClick("about") }
+                        SettingsItem("About Omi Chat", androidx.compose.material.icons.Icons.Default.Info) { onSettingsClick("about") }
                     )
                 )
             }
@@ -126,7 +126,7 @@ fun ProfileHeader(
     stats: ProfileStats,
     onEditClick: () -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -144,7 +144,7 @@ fun ProfileHeader(
                 modifier = Modifier
                     .size(108.dp)
                     .background(Color.Transparent, CircleShape)
-                    .border(3.dp, PopChatBlue, CircleShape)
+                    .border(3.dp, OmiChatBlue, CircleShape)
             )
             
             Avatar(
@@ -168,7 +168,7 @@ fun ProfileHeader(
                             modifier = Modifier.size(16.dp)
                         )
                     },
-                    backgroundColor = PopChatBlue,
+                    backgroundColor = OmiChatBlue,
                     modifier = Modifier.size(24.dp)
                 ) {
                     androidx.compose.foundation.layout.Box()
@@ -235,7 +235,7 @@ fun ProfileHeader(
 
 @Composable
 fun StatColumn(count: Int, label: String) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Column(
         modifier = Modifier
             .weight(1f)
@@ -283,7 +283,7 @@ fun SettingsSection(
     title: String,
     items: List<SettingsItem>
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(0.dp)

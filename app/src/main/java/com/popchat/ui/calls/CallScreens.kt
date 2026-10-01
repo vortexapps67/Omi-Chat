@@ -25,9 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatGreen
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatGreen
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun VoiceCallScreen(
@@ -57,7 +57,7 @@ fun VoiceCallScreen(
                     colors = listOf(
                         Color(0xFF0D47A1), // Dark blue
                         Color(0xFF1565C0),
-                        Color(0xFF1E88E5), // PopChatBlue
+                        Color(0xFF1E88E5), // OmiChatBlue
                         Color(0xFF006064)  // Teal
                     ),
                     center = androidx.compose.ui.geometry.Offset(0.5f, 0.5f),
@@ -108,7 +108,7 @@ fun VoiceCallScreen(
                             color = androidx.compose.ui.graphics.Color.White
                         )
                     },
-                    backgroundColor = PopChatBlue.copy(alpha = 0.9f)
+                    backgroundColor = OmiChatBlue.copy(alpha = 0.9f)
                 ) {
                     androidx.compose.foundation.layout.Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                 }
@@ -386,12 +386,12 @@ fun CallControlButton(
     size: Int = 56,
     onClick: () -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     
     val (backgroundColor, iconColor) = when {
         isDestructive -> androidx.compose.ui.graphics.Color(0xFFEF4444) to androidx.compose.ui.graphics.Color.White
-        isPrimary -> PopChatBlue to androidx.compose.ui.graphics.Color.White
-        isActive -> PopChatBlue.copy(alpha = 0.2f) to PopChatBlue
+        isPrimary -> OmiChatBlue to androidx.compose.ui.graphics.Color.White
+        isActive -> OmiChatBlue.copy(alpha = 0.2f) to OmiChatBlue
         else -> colors.surfaceContainerHighest.copy(alpha = 0.3f) to androidx.compose.ui.graphics.Color.White
     }
 
@@ -461,7 +461,7 @@ fun CallHistoryScreen(
                 }
             },
             colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             )
         )
 
@@ -494,7 +494,7 @@ fun CallHistoryScreen(
                 CallHistoryItem(call = call, onCallBack = onCallBack)
                 androidx.compose.material3.Divider(
                     modifier = Modifier.padding(start = 72.dp),
-                    color = PopChatTheme.colorScheme.outlineVariant,
+                    color = OmiChatTheme.colorScheme.outlineVariant,
                     thickness = 0.5.dp
                 )
             }
@@ -508,12 +508,12 @@ fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Box(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .background(
-                color = if (isSelected) PopChatBlue else colors.surfaceContainerHighest,
+                color = if (isSelected) OmiChatBlue else colors.surfaceContainerHighest,
                 shape = androidx.compose.ui.graphics.RoundedCornerShape(20.dp)
             )
             .pointerInput(Unit) {
@@ -554,7 +554,7 @@ fun CallHistoryItem(
     call: CallHistoryItem,
     onCallBack: (String) -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     val time = formatTime(call.timestamp)
 
     androidx.compose.material3.ListItem(
@@ -593,11 +593,11 @@ fun CallHistoryItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     when (call.type) {
-                        CallType.INCOMING -> Icon(androidx.compose.material.icons.Icons.Default.CallReceived, contentDescription = "Incoming", tint = PopChatGreen, modifier = Modifier.size(16.dp))
-                        CallType.OUTGOING -> Icon(androidx.compose.material.icons.Icons.Default.CallMade, contentDescription = "Outgoing", tint = PopChatBlue, modifier = Modifier.size(16.dp))
+                        CallType.INCOMING -> Icon(androidx.compose.material.icons.Icons.Default.CallReceived, contentDescription = "Incoming", tint = OmiChatGreen, modifier = Modifier.size(16.dp))
+                        CallType.OUTGOING -> Icon(androidx.compose.material.icons.Icons.Default.CallMade, contentDescription = "Outgoing", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
                         CallType.MISSED -> Icon(androidx.compose.material.icons.Icons.Default.CallMissed, contentDescription = "Missed", tint = colors.error, modifier = Modifier.size(16.dp))
                         CallType.VIDEO_INCOMING, CallType.VIDEO_OUTGOING -> {
-                            Icon(androidx.compose.material.icons.Icons.Default.Videocam, contentDescription = "Video", tint = PopChatBlue, modifier = Modifier.size(16.dp))
+                            Icon(androidx.compose.material.icons.Icons.Default.Videocam, contentDescription = "Video", tint = OmiChatBlue, modifier = Modifier.size(16.dp))
                             Text(call.type.name.replace("_", " "), fontSize = 12.sp, color = colors.onSurfaceVariant)
                         }
                     }
@@ -611,7 +611,7 @@ fun CallHistoryItem(
             Icon(
                 imageVector = androidx.compose.material.icons.Icons.Default.Call,
                 contentDescription = "Call back",
-                tint = PopChatBlue,
+                tint = OmiChatBlue,
                 modifier = Modifier.padding(start = 8.dp).size(24.dp)
             )
         }

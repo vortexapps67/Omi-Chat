@@ -38,8 +38,9 @@ import com.popchat.ui.common.Avatar
 import com.popchat.ui.common.CircleIconButton
 import com.popchat.ui.common.MessageBubble
 import com.popchat.ui.common.MessageInputBar
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatGreen
+import com.popchat.ui.theme.OmiChatTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -92,7 +93,7 @@ fun ChatScreen(
                             Text(
                                 text = if (isOnline) "Online" else "Offline",
                                 fontSize = 12.sp,
-                                color = if (isOnline) com.popchat.ui.theme.PopChatGreen else PopChatTheme.colorScheme.onSurfaceVariant
+                                color = if (isOnline) OmiChatGreen else OmiChatTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
                             Text(
@@ -109,7 +110,7 @@ fun ChatScreen(
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
             },
@@ -118,26 +119,26 @@ fun ChatScreen(
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.Call,
                         contentDescription = "Voice call",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
                 IconButton(onClick = onVideoCall) {
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.Videocam,
                         contentDescription = "Video call",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
                 IconButton(onClick = onMoreOptions) {
                     Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
                         contentDescription = "More options",
-                        tint = PopChatTheme.colorScheme.onSurface
+                        tint = OmiChatTheme.colorScheme.onSurface
                     )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             )
         )
 

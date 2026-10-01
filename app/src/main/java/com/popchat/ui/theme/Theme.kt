@@ -6,17 +6,17 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// PopChat Brand Colors - Electric Blue Palette
-val PopChatBlue = Color(0xFF1E88E5)
-val PopChatBlueLight = Color(0xFF64B5F6)
-val PopChatBlueDark = Color(0xFF1565C0)
-val PopChatBlueContainer = Color(0xFFE3F2FD)
-val PopChatBlueContainerDark = Color(0xFF0D47A1)
+// OmiChat Brand Colors - Electric Blue Palette
+val OmiChatBlue = Color(0xFF1E88E5)
+val OmiChatBlueLight = Color(0xFF64B5F6)
+val OmiChatBlueDark = Color(0xFF1565C0)
+val OmiChatBlueContainer = Color(0xFFE3F2FD)
+val OmiChatBlueContainerDark = Color(0xFF0D47A1)
 
 // Accent colors from logo
-val PopChatGreen = Color(0xFF4CAF50)
-val PopChatYellow = Color(0xFFFFC107)
-val PopChatOrange = Color(0xFFFF9800)
+val OmiChatGreen = Color(0xFF4CAF50)
+val OmiChatYellow = Color(0xFFFFC107)
+val OmiChatOrange = Color(0xFFFF9800)
 
 // Neutral colors
 val White = Color.White
@@ -27,15 +27,15 @@ val DarkGray = Color(0xFF757575)
 val Charcoal = Color(0xFF212121)
 
 private val LightColorScheme = lightColorScheme(
-    primary = PopChatBlue,
+    primary = OmiChatBlue,
     onPrimary = White,
-    primaryContainer = PopChatBlueContainer,
-    onPrimaryContainer = PopChatBlueDark,
-    secondary = PopChatBlueLight,
+    primaryContainer = OmiChatBlueContainer,
+    onPrimaryContainer = OmiChatBlueDark,
+    secondary = OmiChatBlueLight,
     onSecondary = White,
-    secondaryContainer = PopChatBlueContainer,
-    onSecondaryContainer = PopChatBlueDark,
-    tertiary = PopChatGreen,
+    secondaryContainer = OmiChatBlueContainer,
+    onSecondaryContainer = OmiChatBlueDark,
+    tertiary = OmiChatGreen,
     onTertiary = White,
     tertiaryContainer = Color(0xFFE8F5E9),
     onTertiaryContainer = Color(0xFF1B5E20),
@@ -58,19 +58,19 @@ private val LightColorScheme = lightColorScheme(
     shadow = Color.Black,
     inverseSurface = Charcoal,
     inverseOnSurface = OffWhite,
-    inversePrimary = PopChatBlueLight,
-    surfaceTint = PopChatBlue
+    inversePrimary = OmiChatBlueLight,
+    surfaceTint = OmiChatBlue
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PopChatBlueLight,
+    primary = OmiChatBlueLight,
     onPrimary = Color(0xFF0D47A1),
-    primaryContainer = PopChatBlueDark,
-    onPrimaryContainer = PopChatBlueContainer,
-    secondary = PopChatBlue,
+    primaryContainer = OmiChatBlueDark,
+    onPrimaryContainer = OmiChatBlueContainer,
+    secondary = OmiChatBlue,
     onSecondary = White,
-    secondaryContainer = PopChatBlueDark,
-    onSecondaryContainer = PopChatBlueContainer,
+    secondaryContainer = OmiChatBlueDark,
+    onSecondaryContainer = OmiChatBlueContainer,
     tertiary = Color(0xFF81C784),
     onTertiary = Color(0xFF1B5E20),
     tertiaryContainer = Color(0xFF2E7D32),
@@ -94,12 +94,12 @@ private val DarkColorScheme = darkColorScheme(
     shadow = Color.Black,
     inverseSurface = OffWhite,
     inverseOnSurface = Charcoal,
-    inversePrimary = PopChatBlue,
-    surfaceTint = PopChatBlueLight
+    inversePrimary = OmiChatBlue,
+    surfaceTint = OmiChatBlueLight
 )
 
 @Composable
-fun PopChatTheme(
+fun OmiChatTheme(
     darkTheme: Boolean = androidx.compose.material3.isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

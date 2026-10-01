@@ -6,7 +6,7 @@ import timber.log.Timber
 
 object AppLogger {
 
-    private const val DEFAULT_TAG = "PopChat"
+    private const val DEFAULT_TAG = "OmiChat"
 
     fun init(context: Context) {
         if (BuildConfig.DEBUG) {

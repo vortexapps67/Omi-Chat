@@ -4,11 +4,11 @@ Generate Android app icons from source image.
 Requires: pip install pillow
 """
 
-from PIL import Image
+from PIL import Image, ImageDraw
 import os
 import sys
 
-def generate_icons(source_path, output_dir="app/src/main/res"):
+def generate_icons(source_path, output_dir="app/src/main/res", logo_path=None):
     """Generate all required Android icon densities."""
     
     # Android icon sizes (density -> size in pixels)
@@ -23,13 +23,10 @@ def generate_icons(source_path, output_dir="app/src/main/res"):
     # Also generate play store icon (512x512)
     play_store_size = 512
     
-    # Round icon sizes (same as regular but with rounded corners mask)
-    round_icon_sizes = icon_sizes.copy()
-    
     try:
-        # Open source image
+        # Open source image for app icon
         img = Image.open(source_path)
-        print(f"Opened source image: {img.size} {img.mode}")
+        print(f"Opened source icon: {img.size} {img.mode}")
         
         # Convert to RGBA if not already
         if img.mode != 'RGBA':
@@ -55,12 +52,11 @@ def generate_icons(source_path, output_dir="app/src/main/res"):
             print(f"Generated: {output_path} ({size}x{size})")
         
         # Generate round icons (with circular mask)
-        for density, size in round_icon_sizes.items():
+        for density, size in icon_sizes.items():
             icon = img.resize((size, size), Image.Resampling.LANCZOS)
             
             # Create circular mask
             mask = Image.new('L', (size, size), 0)
-            from PIL import ImageDraw
             draw = ImageDraw.Draw(mask)
             draw.ellipse((0, 0, size, size), fill=255)
             
@@ -79,18 +75,6 @@ def generate_icons(source_path, output_dir="app/src/main/res"):
         print(f"Generated Play Store: {play_store_path} ({play_store_size}x{play_store_size})")
         
         # Generate adaptive icon foreground (108dp = 432px for xxxhdpi)
-        # For adaptive icons, foreground should be 108x108dp with safe zone 66x66dp
-        adaptive_size = 432  # xxxhdpi
-        foreground_size = 288  # 66dp * 4 (xxxhdpi) - content within safe zone
-        adaptive_icon = img.resize((foreground_size, foreground_size), Image.Resampling.LANCZOS)
-        
-        # Create 432x432 canvas with transparent background
-        adaptive_canvas = Image.new('RGBA', (adaptive_size, adaptive_size), (0, 0, 0, 0))
-        # Center the foreground
-        offset = (adaptive_size - foreground_size) // 2
-        adaptive_canvas.paste(adaptive_icon, (offset, offset), adaptive_icon)
-        
-        # Save adaptive icon foreground for each density
         adaptive_sizes = {
             "mipmap-mdpi": 108,
             "mipmap-hdpi": 162,
@@ -100,7 +84,8 @@ def generate_icons(source_path, output_dir="app/src/main/res"):
         }
         
         for density, size in adaptive_sizes.items():
-            fg_size = size * 66 // 108  # 66dp safe zone
+            # Safe zone is 66dp (66/108 = 61% of total)
+            fg_size = int(size * 66 / 108)
             canvas_size = size
             fg = img.resize((fg_size, fg_size), Image.Resampling.LANCZOS)
             canvas = Image.new('RGBA', (canvas_size, canvas_size), (0, 0, 0, 0))
@@ -111,21 +96,62 @@ def generate_icons(source_path, output_dir="app/src/main/res"):
             canvas.save(output_path, "PNG")
             print(f"Generated adaptive foreground: {output_path} ({size}x{size})")
         
+        # Generate adaptive icon background (solid color from theme)
+        # Using the app's primary blue color
+        background_color = (0x1E, 0x88, 0xE5, 0xFF)  # #1E88E5
+        for density, size in adaptive_sizes.items():
+            bg = Image.new('RGBA', (size, size), background_color)
+            output_path = os.path.join(output_dir, density, "ic_launcher_background.png")
+            bg.save(output_path, "PNG")
+            print(f"Generated adaptive background: {output_path} ({size}x{size})")
+        
+        # Generate splash/logo from omi chat.png if provided
+        if logo_path and os.path.exists(logo_path):
+            logo_img = Image.open(logo_path)
+            if logo_img.mode != 'RGBA':
+                logo_img = logo_img.convert('RGBA')
+            
+            # Generate splash for different densities
+            splash_sizes = {
+                "drawable-mdpi": 320,
+                "drawable-hdpi": 480,
+                "drawable-xhdpi": 640,
+                "drawable-xxhdpi": 960,
+                "drawable-xxxhdpi": 1280,
+            }
+            
+            for density, size in splash_sizes.items():
+                # Maintain aspect ratio, fit within square
+                logo_copy = logo_img.copy()
+                logo_copy.thumbnail((size, size), Image.Resampling.LANCZOS)
+                
+                # Create square canvas with transparent background
+                canvas = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+                offset_x = (size - logo_copy.width) // 2
+                offset_y = (size - logo_copy.height) // 2
+                canvas.paste(logo_copy, (offset_x, offset_y), logo_copy)
+                
+                splash_dir = os.path.join(output_dir, density.replace("mipmap", "drawable"))
+                os.makedirs(splash_dir, exist_ok=True)
+                output_path = os.path.join(splash_dir, "splash_logo.png")
+                canvas.save(output_path, "PNG")
+                print(f"Generated splash: {output_path} ({size}x{size})")
+        
         print("\n✅ All icons generated successfully!")
         print(f"\n📁 Icons saved to: {output_dir}")
-        print("\n📋 Next steps:")
-        print("1. Add background layer for adaptive icons (ic_launcher_background.xml)")
-        print("2. Update mipmap-anydpi-v26/ic_launcher.xml and ic_launcher_round.xml")
-        print("3. Test on device/emulator")
         
     except Exception as e:
         print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
     source = r"D:\WEBSITES\pop chat (andorid app)\pop no name.jpg"
+    logo = r"D:\WEBSITES\pop chat (andorid app)\omi chat.png"
+    
     if not os.path.exists(source):
-        print(f"❌ Source image not found: {source}")
+        print(f"❌ Source icon not found: {source}")
         sys.exit(1)
     
-    generate_icons(source)
+    generate_icons(source, logo_path=logo)

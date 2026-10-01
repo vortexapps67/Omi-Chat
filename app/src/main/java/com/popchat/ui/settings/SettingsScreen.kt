@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.PillButton
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun SettingsScreen(
@@ -55,7 +55,7 @@ fun SettingsScreen(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             )
         )
 
@@ -182,7 +182,7 @@ fun SettingsSection(
     title: String,
     items: List<SettingsItem>
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(0.dp)

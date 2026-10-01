@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.popchat.ui.theme.Theme.PopChatTheme
+import com.popchat.ui.theme.Theme.OmiChatTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -61,7 +61,7 @@ fun AuthScreen(
         ) {
             // Logo
             Text(
-                text = "PopChat",
+                text = "OmiChat",
                 fontSize = 48.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.primary

@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.popchat.ui.common.Avatar
-import com.popchat.ui.theme.PopChatBlue
-import com.popchat.ui.theme.PopChatTheme
+import com.popchat.ui.theme.OmiChatBlue
+import com.popchat.ui.theme.OmiChatTheme
 
 @Composable
 fun SharedMediaScreen(
@@ -59,7 +59,7 @@ fun SharedMediaScreen(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = PopChatTheme.colorScheme.surfaceContainerLow
+                containerColor = OmiChatTheme.colorScheme.surfaceContainerLow
             )
         )
 
@@ -94,12 +94,12 @@ fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Box(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .background(
-                color = if (isSelected) PopChatBlue else colors.surfaceContainerHighest,
+                color = if (isSelected) OmiChatBlue else colors.surfaceContainerHighest,
                 shape = androidx.compose.ui.graphics.RoundedCornerShape(20.dp)
             )
             .pointerInput(Unit) {
@@ -138,7 +138,7 @@ fun MediaGrid() {
 
 @Composable
 fun MediaGridItem(item: MediaItem) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     val aspectRatio = if (item.isVideo) 16f / 9f else 1f
 
     Box(
@@ -197,7 +197,7 @@ fun MediaGridItem(item: MediaItem) {
 
 @Composable
 fun UploadCard() {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -242,7 +242,7 @@ fun FilesList() {
 
 @Composable
 fun FileListItem(file: FileItem) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     androidx.compose.material3.ListItem(
         modifier = Modifier.fillMaxWidth().background(colors.surface, RoundedCornerShape(12.dp)).padding(8.dp),
         leading = {
@@ -253,7 +253,7 @@ fun FileListItem(file: FileItem) {
                 Icon(
                     imageVector = file.icon,
                     contentDescription = null,
-                    tint = PopChatBlue,
+                    tint = OmiChatBlue,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -270,7 +270,7 @@ fun FileListItem(file: FileItem) {
             Icon(
                 imageVector = androidx.compose.material.icons.Icons.Default.Download,
                 contentDescription = "Download",
-                tint = PopChatBlue
+                tint = OmiChatBlue
             )
         }
     )
@@ -291,7 +291,7 @@ fun LinksList() {
 
 @Composable
 fun LinkListItem(link: LinkItem) {
-    val colors = PopChatTheme.colorScheme
+    val colors = OmiChatTheme.colorScheme
     androidx.compose.material3.ListItem(
         modifier = Modifier.fillMaxWidth().background(colors.surface, RoundedCornerShape(12.dp)).padding(8.dp),
         leading = {
@@ -307,7 +307,7 @@ fun LinkListItem(link: LinkItem) {
                         Icon(
                             imageVector = androidx.compose.material.icons.Icons.Default.Link,
                             contentDescription = "Link",
-                            tint = PopChatBlue,
+                            tint = OmiChatBlue,
                             modifier = Modifier.size(24.dp)
                         )
                     }
