@@ -28,6 +28,11 @@ local.properties.template
 .env.*.local
 
 # Signing files
+# These hold the release signing key and its passwords. They are the most
+# sensitive files in the project: losing the keystore means every future
+# release can never be an update to an already-installed app, and leaking the
+# passwords lets anyone sign malware as Omi Chat.
+/keystore/
 *.keystore
 *.jks
 *.key

@@ -55,9 +55,16 @@ android {
     // Declared before buildTypes so the release build type can reference it.
     signingConfigs {
         create("release") {
+            // Resolved against the repository root, not this module's directory.
+            // CI writes the decoded keystore to <repo>/keystore/release.keystore
+            // and sets KEYSTORE_PATH=keystore/release.keystore, but a bare
+            // file() inside app/build.gradle.kts resolves relative to app/ and
+            // would look for app/keystore/release.keystore - which never exists.
+            // The path would then silently fall through to an unsigned APK, so
+            // the release would build but never be installable.
             val storePath = System.getenv("KEYSTORE_PATH")
             if (!storePath.isNullOrBlank()) {
-                val candidate = file(storePath)
+                val candidate = rootProject.file(storePath)
                 if (candidate.exists()) {
                     storeFile = candidate
                     storePassword = System.getenv("KEYSTORE_PASSWORD")
