@@ -102,11 +102,47 @@ jobs:
             echo "KEY_PASSWORD=${KEY_PASSWORD}"
           } >> "$GITHUB_ENV"
 
+      # Gradle output is teed to a file as well as the console. The console log
+      # for a failed job is only visible to someone who can open Actions, and it
+      # is truncated at a few thousand lines, so the same output is also written
+      # to the run summary and uploaded as an artifact. pipefail is required:
+      # the runner's default shell is `bash -e`, and without it the exit status
+      # of a pipeline is the status of `tee`, so a failed build would look green.
       - name: Build release APK
-        run: ./gradlew :app:assembleRelease --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleRelease --stacktrace 2>&1 | tee gradle-assembleRelease.log
 
       - name: Build release AAB
-        run: ./gradlew :app:bundleRelease --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:bundleRelease --stacktrace 2>&1 | tee gradle-bundleRelease.log
+
+      # Runs even when a build step failed, which is the whole point.
+      - name: Publish Gradle diagnostics
+        if: always()
+        run: |
+          found=0
+          for log in gradle-*.log; do
+            [ -f "$log" ] || continue
+            found=1
+            echo "### $log" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 500 "$log" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+          if [ "$found" = 0 ]; then
+            echo 'No Gradle log was produced - the build never started.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs-${{ github.run_id }}
+          path: gradle-*.log
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Collect artifacts with version
         run: |
@@ -194,7 +230,22 @@ jobs:
           EOF
 
       - name: Lint
-        run: ./gradlew :app:lintDebug --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:lintDebug --stacktrace 2>&1 | tee gradle-lintDebug.log
 
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee gradle-testDebugUnitTest.log
+
+      # Uploaded unconditionally so a red PR can be diagnosed from the artifact
+      # alone, without needing Actions log access.
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs-${{ github.run_id }}
+          path: gradle-*.log
+          if-no-files-found: ignore
+          retention-days: 14

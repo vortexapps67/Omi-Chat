@@ -87,3 +87,5 @@ compose/
 
 # Android Studio
 *.hprof
+# Gradle output captured by CI for diagnosability
+gradle-*.log
