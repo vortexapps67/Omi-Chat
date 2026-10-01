@@ -2,13 +2,17 @@ name: Build and Release APK
 
 on:
   # Pushes to main run a full release build so every merge is verifiable.
+  #
+  # No paths filter here. A paths-ignore appears harmless but is not: GitHub
+  # evaluates path filters against the files a push changed, and a commit that
+  # changes none - which is exactly what an empty "re-run the build" commit is -
+  # matches nothing and is therefore skipped. That makes the documented way to
+  # re-run after adding a secret silently do nothing.
   push:
     branches:
       - main
     tags:
       - 'v*'
-    paths-ignore:
-      - '**.md'
   # Pull requests get the debug build plus lint and unit tests.
   pull_request:
     branches:
